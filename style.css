@@ -1,0 +1,5 @@
+.dokuwiki #plugin__captcha_wrapper img {
+    margin: 1px;
+    vertical-align: bottom;
+    border: 1px solid __border__;
+}
