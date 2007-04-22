@@ -22,7 +22,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         return array(
             'author' => 'Andreas Gohr',
             'email'  => 'andi@splitbrain.org',
-            'date'   => '2006-12-02',
+            'date'   => '2007-04-22',
             'name'   => 'CAPTCHA Plugin',
             'desc'   => 'Use a CAPTCHA challenge to protect the Wiki against automated spam',
             'url'    => 'http://wiki:splitbrain.org/plugin:captcha',
@@ -46,12 +46,6 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
                                    array('editform' => true));
 
         if($this->getConf('regprotect')){
-            $controller->register_hook('ACTION_REGISTER',
-                                       'BEFORE',
-                                       $this,
-                                       'handle_act_register',
-                                       array());
-
             $controller->register_hook('HTML_REGISTERFORM_INJECTION',
                                        'BEFORE',
                                        $this,
@@ -64,13 +58,18 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
      * Will intercept the 'save' action and check for CAPTCHA first.
      */
     function handle_act_preprocess(&$event, $param){
-        if('save' != $this->_act_clean($event->data)) return; // nothing to do for us
+        $act = $this->_act_clean($event->data);
+        if(!('save' == $act || ($this->getConf('regprotect') &&
+                                'register' == $act &&
+                                $_POST['save']))){
+            return; // nothing to do for us
+        }
+
         // do nothing if logged in user and no CAPTCHA required
         if(!$this->getConf('forusers') && $_SERVER['REMOTE_USER']){
             return;
         }
 
-
         // compare provided string with decrypted captcha
         $rand = PMA_blowfish_decrypt($_REQUEST['plugin__captcha_secret'],auth_cookiesalt());
         $code = $this->_generateCAPTCHA($this->_fixedIdent(),$rand);
@@ -78,33 +77,17 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         if(!$_REQUEST['plugin__captcha_secret'] ||
            !$_REQUEST['plugin__captcha'] ||
            strtoupper($_REQUEST['plugin__captcha']) != $code){
-                // CAPTCHA test failed! Continue to edit instead of saving
+                // CAPTCHA test failed!
                 msg($this->getLang('testfailed'),-1);
-                $event->data = 'preview';
+                if($act == 'save'){
+                    // stay in preview mode
+                    $event->data = 'preview';
+                }else{
+                    // stay in register mode, but disable the save parameter
+                    $_POST['save'] = false;
+                }
         }
-        // if we arrive here it was a valid save
     }
-
-    /**
-     * Will intercept the register process and check for CAPTCHA first.
-     */
-    function handle_act_register(&$event, $param){
-        // compare provided string with decrypted captcha
-        $rand = PMA_blowfish_decrypt($_REQUEST['plugin__captcha_secret'],auth_cookiesalt());
-        $code = $this->_generateCAPTCHA($this->_fixedIdent(),$rand);
-
-        if(!$_REQUEST['plugin__captcha_secret'] ||
-           !$_REQUEST['plugin__captcha'] ||
-           strtoupper($_REQUEST['plugin__captcha']) != $code){
-                // CAPTCHA test failed! Continue to edit instead of saving
-                msg($this->getLang('testfailed'),-1);
-                $event->preventDefault();
-                $event->stopPropagation();
-                return false;
-        }
-        // if we arrive here it was a valid save
-    }
-
 
     /**
      * Create the additional fields for the edit form
