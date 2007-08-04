@@ -39,18 +39,34 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
                                    'handle_act_preprocess',
                                    array());
 
+        // old hook
         $controller->register_hook('HTML_EDITFORM_INJECTION',
                                    'BEFORE',
                                    $this,
-                                   'handle_editform_injection',
-                                   array('editform' => true));
+                                   'handle_editform_output',
+                                   array('editform' => true, 'oldhook' => true));
+
+        // new hook
+        $controller->register_hook('HTML_EDITFORM_OUTPUT',
+                                   'BEFORE',
+                                   $this,
+                                   'handle_editform_output',
+                                   array('editform' => true, 'oldhook' => false));
 
         if($this->getConf('regprotect')){
+            // old hook
             $controller->register_hook('HTML_REGISTERFORM_INJECTION',
                                        'BEFORE',
                                        $this,
-                                       'handle_editform_injection',
-                                       array('editform' => false));
+                                       'handle_editform_output',
+                                       array('editform' => false, 'oldhook' => true));
+
+            // new hook
+            $controller->register_hook('HTML_REGISTERFORM_OUTPUT',
+                                       'BEFORE',
+                                       $this,
+                                       'handle_editform_output',
+                                       array('editform' => false, 'oldhook' => false));
         }
     }
 
@@ -92,8 +108,16 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
     /**
      * Create the additional fields for the edit form
      */
-    function handle_editform_injection(&$event, $param){
-        if($param['editform'] && !$event->data['writable']) return;
+    function handle_editform_output(&$event, $param){
+        // check if source view -> no captcha needed
+        if(!$param['oldhook']){
+            // get position of submit button
+            $pos = $event->data->findElementByAttribute('type','submit');
+            if(!$pos) return; // no button -> source view mode
+        }elseif($param['editform'] && !$event->data['writable']){
+            if($param['editform'] && !$event->data['writable']) return;
+        }
+
         // do nothing if logged in user and no CAPTCHA required
         if(!$this->getConf('forusers') && $_SERVER['REMOTE_USER']){
             return;
@@ -105,31 +129,40 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         $code = $this->_generateCAPTCHA($this->_fixedIdent(),$rand);
         $secret = PMA_blowfish_encrypt($rand,auth_cookiesalt());
 
-        echo '<div id="plugin__captcha_wrapper">';
-        echo '<input type="hidden" name="plugin__captcha_secret" value="'.hsc($secret).'" />';
-        echo '<label for="plugin__captcha">'.$this->getLang('fillcaptcha').'</label> ';
-        echo '<input type="text" size="5" maxlength="5" name="plugin__captcha" id="plugin__captcha" class="edit" /> ';
+        $out  = '';
+        $out .= '<div id="plugin__captcha_wrapper">';
+        $out .= '<input type="hidden" name="plugin__captcha_secret" value="'.hsc($secret).'" />';
+        $out .= '<label for="plugin__captcha">'.$this->getLang('fillcaptcha').'</label> ';
+        $out .= '<input type="text" size="5" maxlength="5" name="plugin__captcha" id="plugin__captcha" class="edit" /> ';
         switch($this->getConf('mode')){
             case 'text':
-                echo $code;
+                $out .= $code;
                 break;
             case 'js':
-                echo '<span id="plugin__captcha_code">'.$code.'</span>';
+                $out .= '<span id="plugin__captcha_code">'.$code.'</span>';
                 break;
             case 'image':
-                echo '<img src="'.DOKU_BASE.'lib/plugins/captcha/img.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'" '.
-                     ' width="'.$this->getConf('width').'" height="'.$this->getConf('height').'" alt="" /> ';
+                $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/img.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'" '.
+                        ' width="'.$this->getConf('width').'" height="'.$this->getConf('height').'" alt="" /> ';
                 break;
             case 'audio':
-                echo '<img src="'.DOKU_BASE.'lib/plugins/captcha/img.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'" '.
-                     ' width="'.$this->getConf('width').'" height="'.$this->getConf('height').'" alt="" /> ';
-                echo '<a href="'.DOKU_BASE.'lib/plugins/captcha/wav.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'"'.
-                     ' class="JSnocheck" title="'.$this->getLang('soundlink').'">';
-                echo '<img src="'.DOKU_BASE.'lib/plugins/captcha/sound.png" width="16" height="16"'.
-                     ' alt="'.$this->getLang('soundlink').'" /></a>';
+                $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/img.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'" '.
+                        ' width="'.$this->getConf('width').'" height="'.$this->getConf('height').'" alt="" /> ';
+                $out .= '<a href="'.DOKU_BASE.'lib/plugins/captcha/wav.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'"'.
+                        ' class="JSnocheck" title="'.$this->getLang('soundlink').'">';
+                $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/sound.png" width="16" height="16"'.
+                        ' alt="'.$this->getLang('soundlink').'" /></a>';
                 break;
         }
-        echo '</div>';
+        $out .= '</div>';
+
+        if($param['oldhook']){
+            // old wiki - just print
+            echo $out;
+        }else{
+            // new wiki - insert at correct position
+            $event->data->insertElement($pos++,$out);
+        }
     }
 
     /**
