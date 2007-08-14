@@ -6,8 +6,8 @@
  */
 
 $lang['mode']       = "Welcher CAPTCHA-Typ soll benutzt werden?";
-$lang['mode_o_js']    = "Text (automatisch ausgefüllt via JavaScript)";
-$lang['mode_o_text']  = "Text (manuell auszufüllen)";
+$lang['mode_o_js']    = "Text (automatisch ausgefÃ¼llt via JavaScript)";
+$lang['mode_o_text']  = "Text (manuell auszufÃ¼llen)";
 $lang['mode_o_image'] = "Bild (nicht barrierefrei)";
 $lang['mode_o_audio'] = "Bild+Audio (barrierefrei)";
 
