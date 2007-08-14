@@ -22,7 +22,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         return array(
             'author' => 'Andreas Gohr',
             'email'  => 'andi@splitbrain.org',
-            'date'   => '2007-08-06',
+            'date'   => '2007-08-14',
             'name'   => 'CAPTCHA Plugin',
             'desc'   => 'Use a CAPTCHA challenge to protect the Wiki against automated spam',
             'url'    => 'http://wiki:splitbrain.org/plugin:captcha',
