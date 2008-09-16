@@ -22,7 +22,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         return array(
             'author' => 'Andreas Gohr',
             'email'  => 'andi@splitbrain.org',
-            'date'   => '2007-08-14',
+            'date'   => '2008-09-16',
             'name'   => 'CAPTCHA Plugin',
             'desc'   => 'Use a CAPTCHA challenge to protect the Wiki against automated spam',
             'url'    => 'http://wiki:splitbrain.org/plugin:captcha',
@@ -206,19 +206,13 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
      */
     function _generateCAPTCHA($fixed,$rand){
         $fixed = hexdec(substr(md5($fixed),5,5)); // use part of the md5 to generate an int
-        $rand = $rand * $fixed; // combine both values
-
-        // seed the random generator
-        srand($rand);
+        $numbers = md5($rand * $fixed); // combine both values
 
         // now create the letters
         $code = '';
-        for($i=0;$i<5;$i++){
-            $code .= chr(rand(65, 90));
+        for($i=0;$i<10;$i+=2){
+            $code .= chr(floor(hexdec($numbers[$i].$numbers[$i+1])/10) + 65);
         }
-
-        // restore a really random seed
-        srand();
 
         return $code;
     }
