@@ -11,10 +11,9 @@ define('NOSESSION',true);
 define('DOKU_DISABLE_GZIP_OUTPUT', 1);
 require_once(DOKU_INC.'inc/init.php');
 require_once(DOKU_INC.'inc/auth.php');
-require_once(dirname(__FILE__).'/action.php');
 
 $ID = $_REQUEST['id'];
-$plugin = new action_plugin_captcha();
+$plugin = plugin_load('helper','captcha');
 $rand = PMA_blowfish_decrypt($_REQUEST['secret'],auth_cookiesalt());
 $code = strtolower($plugin->_generateCAPTCHA($plugin->_fixedIdent(),$rand));
 
