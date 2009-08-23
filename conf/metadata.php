@@ -5,7 +5,7 @@
  * @author Andreas Gohr <andi@splitbrain.org>
  */
 
-$meta['mode']       = array('multichoice','_choices' => array('js','text','image','audio'));
+$meta['mode']       = array('multichoice','_choices' => array('js','text','image','audio','figlet'));
 $meta['regprotect'] = array('onoff');
 $meta['forusers']   = array('onoff');
 $meta['width']      = array('numeric','_pattern' => '/[0-9]+/');

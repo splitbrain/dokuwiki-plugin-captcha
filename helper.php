@@ -61,6 +61,17 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
                 $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/sound.png" width="16" height="16"'.
                         ' alt="'.$this->getLang('soundlink').'" /></a>';
                 break;
+            case 'figlet':
+                require_once(dirname(__FILE__).'/figlet.php');
+                $figlet = new phpFiglet();
+                if($figlet->loadfont(dirname(__FILE__).'/figlet.flf')){
+                    $out .= '<pre>';
+                    $out .= rtrim($figlet->fetch($code));
+                    $out .= '</pre>';
+                }else{
+                    msg('Failed to load figlet.flf font file. CAPTCHA broken',-1);
+                }
+                break;
         }
         $out .= '</div>';
         return $out;

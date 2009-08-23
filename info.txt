@@ -1,6 +1,6 @@
 author Andreas Gohr
 email  andi@splitbrain.org
-date   2009-01-03
+date   2009-08-23
 name   CAPTCHA Plugin
 desc   Use a CAPTCHA challenge to protect the Wiki against automated spam
 url    http://wiki:splitbrain.org/plugin:captcha
