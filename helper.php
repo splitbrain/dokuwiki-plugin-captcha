@@ -11,13 +11,6 @@ require_once(DOKU_INC.'inc/blowfish.php');
 class helper_plugin_captcha extends DokuWiki_Plugin {
 
     /**
-     * return some info
-     */
-    function getInfo(){
-        return confToHash(dirname(__FILE__).'/info.txt');
-    }
-
-    /**
      * Check if the CAPTCHA should be used. Always check this before using the methods below.
      *
      * @return bool true when the CAPTCHA should be used
