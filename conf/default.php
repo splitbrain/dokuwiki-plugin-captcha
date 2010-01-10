@@ -6,7 +6,7 @@
  */
 
 $conf['mode']       = 'js';
-$conf['forusers']   = false;
-$conf['regprotect'] = true;
+$conf['forusers']   = 0;
+$conf['regprotect'] = 1;
 $conf['width']      = 115;
 $conf['height']     = 22;
