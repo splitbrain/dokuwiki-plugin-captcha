@@ -6,7 +6,7 @@
  * @author     Andreas Gohr <gohr@cosmocode.de>
  */
 
-if(!defined('DOKU_INC')) define('DOKU_INC',realpath(dirname(__FILE__).'/../../../').'/');
+if(!defined('DOKU_INC')) define('DOKU_INC',dirname(__FILE__).'/../../../');
 define('NOSESSION',true);
 define('DOKU_DISABLE_GZIP_OUTPUT', 1);
 require_once(DOKU_INC.'inc/init.php');
