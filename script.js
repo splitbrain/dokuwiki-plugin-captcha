@@ -1,12 +1,12 @@
 /**
  * Autofill and hide the whole captcha stuff in the simple JS mode
  */
-addInitEvent(function(){
-    var code = $('plugin__captcha_code');
+jQuery(function(){
+    var code = jQuery('#plugin__captcha_code')[0];
     if(!code) return;
 
-    var box  = $('plugin__captcha');
+    var box  = jQuery('#plugin__captcha')[0];
     box.value=code.innerHTML;
 
-    $('plugin__captcha_wrapper').style.display = 'none';
+    jQuery('plugin__captcha_wrapper')[0].style.display = 'none';
 });
