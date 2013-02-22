@@ -8,5 +8,5 @@ jQuery(function(){
     var box  = jQuery('#plugin__captcha')[0];
     box.value=code.innerHTML;
 
-    jQuery('plugin__captcha_wrapper')[0].style.display = 'none';
+    jQuery('#plugin__captcha_wrapper')[0].style.display = 'none';
 });
