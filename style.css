@@ -13,3 +13,7 @@
     color: __text__;
     padding: 0;
 }
+
+.dokuwiki #plugin__captcha_wrapper .no {
+    display: none;
+}

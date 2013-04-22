@@ -10,6 +10,20 @@ require_once(DOKU_INC.'inc/blowfish.php');
 
 class helper_plugin_captcha extends DokuWiki_Plugin {
 
+    protected $field_in  = 'plugin__captcha';
+    protected $field_sec = 'plugin__captcha_secret';
+    protected $field_hp  = 'plugin__captcha_honeypot';
+
+    /**
+     * Constructor. Initializes field names
+     */
+    function __construct(){
+        $this->field_in  = md5($this->_fixedIdent() . $this->field_in);
+        $this->field_sec = md5($this->_fixedIdent() . $this->field_sec);
+        $this->field_hp  = md5($this->_fixedIdent() . $this->field_hp);
+    }
+
+
     /**
      * Check if the CAPTCHA should be used. Always check this before using the methods below.
      *
@@ -32,9 +46,10 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
 
         $out  = '';
         $out .= '<div id="plugin__captcha_wrapper">';
-        $out .= '<input type="hidden" name="plugin__captcha_secret" value="'.hsc($secret).'" />';
+        $out .= '<input type="hidden" name="'.$this->field_sec.'" value="'.hsc($secret).'" />';
         $out .= '<label for="plugin__captcha">'.$this->getLang('fillcaptcha').'</label> ';
-        $out .= '<input type="text" size="5" maxlength="5" name="plugin__captcha" id="plugin__captcha" class="edit" /> ';
+        $out .= '<input type="text" size="5" maxlength="5" name="'.$this->field_in.'" class="edit" /> ';
+
         switch($this->getConf('mode')){
             case 'text':
                 $out .= $code;
@@ -66,6 +81,9 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
                 }
                 break;
         }
+
+        // add honeypot field
+        $out .= '<label class="no">Please keep this field empty: <input type="text" name="'.$this->field_hp.'" /></label>';
         $out .= '</div>';
         return $out;
     }
@@ -78,12 +96,14 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      */
     function check($msg=true){
         // compare provided string with decrypted captcha
-        $rand = PMA_blowfish_decrypt($_REQUEST['plugin__captcha_secret'],auth_cookiesalt());
+        $rand = PMA_blowfish_decrypt($_REQUEST[$this->field_sec],auth_cookiesalt());
         $code = $this->_generateCAPTCHA($this->_fixedIdent(),$rand);
 
-        if(!$_REQUEST['plugin__captcha_secret'] ||
-           !$_REQUEST['plugin__captcha'] ||
-           strtoupper($_REQUEST['plugin__captcha']) != $code){
+        if(!$_REQUEST[$this->field_sec] ||
+           !$_REQUEST[$this->field_in] ||
+           strtoupper($_REQUEST[$this->field_in]) != $code ||
+           trim($_REQUEST[$this->field_hp]) !== ''
+          ){
             if($msg) msg($this->getLang('testfailed'),-1);
             return false;
         }
@@ -109,6 +129,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      *
      * @param $fixed string - the fixed part, any string
      * @param $rand  float  - some random number between 0 and 1
+     * @return string
      */
     function _generateCAPTCHA($fixed,$rand){
         $fixed = hexdec(substr(md5($fixed),5,5)); // use part of the md5 to generate an int
