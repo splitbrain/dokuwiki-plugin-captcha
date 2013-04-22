@@ -13,7 +13,14 @@ require_once(DOKU_INC.'inc/init.php');
 require_once(DOKU_INC.'inc/auth.php');
 
 $ID = $_REQUEST['id'];
+/** @var $plugin helper_plugin_captcha */
 $plugin = plugin_load('helper','captcha');
+
+if($plugin->getConf('mode') != 'audio'){
+    http_status(404);
+    exit;
+}
+
 $rand = PMA_blowfish_decrypt($_REQUEST['secret'],auth_cookiesalt());
 $code = strtolower($plugin->_generateCAPTCHA($plugin->_fixedIdent(),$rand));
 
