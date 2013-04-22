@@ -131,6 +131,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $w = $this->getConf('width');
         $h = $this->getConf('height');
 
+        $fonts = glob(dirname(__FILE__).'/fonts/*.ttf');
+
         // create a white image
         $img = imagecreate($w, $h);
         imagecolorallocate($img, 255, 255, 255);
@@ -143,7 +145,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
 
         // draw the letters
         for ($i = 0; $i < strlen($text); $i++){
-            $font  = dirname(__FILE__).'/VeraSe.ttf';
+            $font  = $fonts[array_rand($fonts)];
             $color = imagecolorallocate($img, rand(0, 100), rand(0, 100), rand(0, 100));
             $size  = rand(floor($h/1.8),floor($h*0.7));
             $angle = rand(-35, 35);
