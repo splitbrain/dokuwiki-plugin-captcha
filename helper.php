@@ -41,17 +41,24 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         global $ID;
 
         $rand = (float) (rand(0,10000))/10000;
-        $code = $this->_generateCAPTCHA($this->_fixedIdent(),$rand);
+        if($this->getConf('mode') == 'math'){
+            $code = $this->_generateMATH($this->_fixedIdent(),$rand);
+            $code = $code[0];
+            $text = $this->getLang('fillmath');
+        } else {
+            $code = $this->_generateCAPTCHA($this->_fixedIdent(),$rand);
+            $text = $this->getLang('fillcaptcha');
+        }
         $secret = PMA_blowfish_encrypt($rand,auth_cookiesalt());
 
         $out  = '';
         $out .= '<div id="plugin__captcha_wrapper">';
         $out .= '<input type="hidden" name="'.$this->field_sec.'" value="'.hsc($secret).'" />';
-        $out .= '<label for="plugin__captcha">'.$this->getLang('fillcaptcha').'</label> ';
-        $out .= '<input type="text" size="5" maxlength="5" name="'.$this->field_in.'" class="edit" /> ';
+        $out .= '<label for="plugin__captcha">'.$text.'</label> ';
 
         switch($this->getConf('mode')){
             case 'text':
+            case 'math':
                 $out .= $code;
                 break;
             case 'js':
@@ -81,6 +88,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
                 }
                 break;
         }
+        $out .= ' <input type="text" size="5" maxlength="5" name="'.$this->field_in.'" class="edit" /> ';
 
         // add honeypot field
         $out .= '<label class="no">Please keep this field empty: <input type="text" name="'.$this->field_hp.'" /></label>';
@@ -97,7 +105,13 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
     function check($msg=true){
         // compare provided string with decrypted captcha
         $rand = PMA_blowfish_decrypt($_REQUEST[$this->field_sec],auth_cookiesalt());
-        $code = $this->_generateCAPTCHA($this->_fixedIdent(),$rand);
+
+        if($this->getConf('mode') == 'math'){
+            $code = $this->_generateMATH($this->_fixedIdent(),$rand);
+            $code = $code[1];
+        }else{
+            $code = $this->_generateCAPTCHA($this->_fixedIdent(),$rand);
+        }
 
         if(!$_REQUEST[$this->field_sec] ||
            !$_REQUEST[$this->field_in] ||
@@ -144,6 +158,30 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         return $code;
     }
 
+    /**
+     * Create a mathematical task and its result
+     *
+     * @param $fixed string - the fixed part, any string
+     * @param $rand  float  - some random number between 0 and 1
+     * @return string
+     */
+    function _generateMATH($fixed, $rand){
+        $fixed = hexdec(substr(md5($fixed),5,5)); // use part of the md5 to generate an int
+        $numbers = md5($rand * $fixed); // combine both values
+
+        // first letter is the operator (+/-)
+        $op  = (hexdec($numbers[0]) > 8 ) ? -1 : 1;
+        $num = array(hexdec($numbers[1].$numbers[2]), hexdec($numbers[3]));
+
+        // we only want positive results
+        if(($op < 0) && ($num[0] < $num[1])) rsort($num);
+
+        // prepare result and task text
+        $res  = $num[0] + ($num[1] * $op);
+        $task = $num[0] . (($op < 0) ? '&nbsp;-&nbsp;' : '&nbsp;+&nbsp;') . $num[1] . '&nbsp;=&nbsp;?';
+
+        return array($task, $res);
+    }
 
     /**
      * Create a CAPTCHA image

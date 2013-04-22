@@ -8,6 +8,7 @@
 $lang['mode']          = "Which type of CAPTCHA to use?";
 $lang['mode_o_js']     = "Text (prefilled with JavaScript)";
 $lang['mode_o_text']   = "Text (manual only)";
+$lang['mode_o_math']   = "Math Problem";
 $lang['mode_o_image']  = "Image (bad accessibility)";
 $lang['mode_o_audio']  = "Image+Audio (better accessibility)";
 $lang['mode_o_figlet'] = "Figlet ASCII Art (bad accessibility)";
