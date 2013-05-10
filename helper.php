@@ -128,14 +128,18 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * Build a semi-secret fixed string identifying the current page and user
      *
      * This string is always the same for the current user when editing the same
-     * page revision.
+     * page revision, but only for one day. Editing a page before midnight and saving
+     * after midnight will result in a failed CAPTCHA once, but makes sure it can
+     * not be reused which is especially important for the registration form where the
+     * $ID usually won't change.
      */
     function _fixedIdent(){
         global $ID;
         $lm = @filemtime(wikiFN($ID));
+        $td = date('Y-m-d');
         return auth_browseruid().
                auth_cookiesalt().
-               $ID.$lm;
+               $ID.$lm.$td;
     }
 
     /**
