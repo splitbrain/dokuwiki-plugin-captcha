@@ -58,12 +58,12 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $out .= '<label for="plugin__captcha">'.$text.'</label> ';
 
         switch($this->getConf('mode')) {
-            case 'text':
             case 'math':
-                $out .= $code;
+            case 'text':
+                $out .= $this->_obfuscateText($code);
                 break;
             case 'js':
-                $out .= '<span id="plugin__captcha_code">'.$code.'</span>';
+                $out .= '<span id="plugin__captcha_code">'.$this->_obfuscateText($code).'</span>';
                 break;
             case 'image':
                 $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/img.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'" '.
@@ -146,6 +146,54 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
     }
 
     /**
+     * Adds random space characters within the given text
+     *
+     * Keeps subsequent numbers without spaces (for math problem)
+     *
+     * @param $text
+     * @return string
+     */
+    protected function _obfuscateText($text){
+        $new = '';
+
+        $spaces = array(
+            "\r",
+            "\n",
+            "\r\n",
+            ' ',
+            "\xC2\xA0", // \u00A0    NO-BREAK SPACE
+            "\xE2\x80\x80", // \u2000    EN QUAD
+            "\xE2\x80\x81", // \u2001    EM QUAD
+            "\xE2\x80\x82", // \u2002    EN SPACE
+   //         "\xE2\x80\x83", // \u2003    EM SPACE
+            "\xE2\x80\x84", // \u2004    THREE-PER-EM SPACE
+            "\xE2\x80\x85", // \u2005    FOUR-PER-EM SPACE
+            "\xE2\x80\x86", // \u2006    SIX-PER-EM SPACE
+            "\xE2\x80\x87", // \u2007    FIGURE SPACE
+            "\xE2\x80\x88", // \u2008    PUNCTUATION SPACE
+            "\xE2\x80\x89", // \u2009    THIN SPACE
+            "\xE2\x80\x8A", // \u200A    HAIR SPACE
+            "\xE2\x80\xAF", // \u202F    NARROW NO-BREAK SPACE
+            "\xE2\x81\x9F", // \u205F    MEDIUM MATHEMATICAL SPACE
+
+            "\xE1\xA0\x8E\r\n", // \u180E    MONGOLIAN VOWEL SEPARATOR
+            "\xE2\x80\x8B\r\n", // \u200B    ZERO WIDTH SPACE
+            "\xEF\xBB\xBF\r\n", // \uFEFF    ZERO WIDTH NO-BREAK SPACE
+        );
+
+        $len = strlen($text);
+        for($i=0; $i<$len-1; $i++){
+            $new .= $text{$i};
+
+            if(!is_numeric($text{$i+1})){
+                $new .= $spaces[array_rand($spaces)];
+            }
+        }
+        $new .= $text{$len-1};
+        return $new;
+    }
+
+    /**
      * Generates a random char string
      *
      * @param $fixed string the fixed part, any string
@@ -185,7 +233,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
 
         // prepare result and task text
         $res  = $num[0] + ($num[1] * $op);
-        $task = $num[0].(($op < 0) ? '&nbsp;-&nbsp;' : '&nbsp;+&nbsp;').$num[1].'&nbsp;=&nbsp;?';
+        $task = $num[0].(($op < 0) ? '-' : '+').$num[1].'=?';
 
         return array($task, $res);
     }
