@@ -50,6 +50,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         }
         $secret = PMA_blowfish_encrypt($rand, auth_cookiesalt());
 
+        $txtlen = $this->getConf('lettercount');
+
         $out = '';
         $out .= '<div id="plugin__captcha_wrapper">';
         $out .= '<input type="hidden" name="'.$this->field_sec.'" value="'.hsc($secret).'" />';
@@ -87,7 +89,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
                 }
                 break;
         }
-        $out .= ' <input type="text" size="5" maxlength="5" name="'.$this->field_in.'" class="edit" /> ';
+        $out .= ' <input type="text" size="'.$txtlen.'" maxlength="'.$txtlen.'" name="'.$this->field_in.'" class="edit" /> ';
 
         // add honeypot field
         $out .= '<label class="no">Please keep this field empty: <input type="text" name="'.$this->field_hp.'" /></label>';
@@ -144,7 +146,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
     }
 
     /**
-     * Generates a random 5 char string
+     * Generates a random char string
      *
      * @param $fixed string the fixed part, any string
      * @param $rand  float  some random number between 0 and 1
@@ -156,7 +158,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
 
         // now create the letters
         $code = '';
-        for($i = 0; $i < 10; $i += 2) {
+        for($i = 0; $i < ($this->getConf('lettercount') * 2); $i += 2) {
             $code .= chr(floor(hexdec($numbers[$i].$numbers[$i + 1]) / 10) + 65);
         }
 
@@ -200,8 +202,9 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $fonts = glob(dirname(__FILE__).'/fonts/*.ttf');
 
         // create a white image
-        $img = imagecreate($w, $h);
-        imagecolorallocate($img, 255, 255, 255);
+        $img = imagecreatetruecolor($w, $h);
+        $white = imagecolorallocate($img, 255, 255, 255);
+        imagefill($img, 0, 0, $white);
 
         // add some lines as background noise
         for($i = 0; $i < 30; $i++) {
@@ -210,13 +213,14 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         }
 
         // draw the letters
-        for($i = 0; $i < strlen($text); $i++) {
+        $txtlen = strlen($text);
+        for($i = 0; $i < $txtlen; $i++) {
             $font  = $fonts[array_rand($fonts)];
             $color = imagecolorallocate($img, rand(0, 100), rand(0, 100), rand(0, 100));
             $size  = rand(floor($h / 1.8), floor($h * 0.7));
             $angle = rand(-35, 35);
 
-            $x       = ($w * 0.05) + $i * floor($w * 0.9 / 5);
+            $x       = ($w * 0.05) + $i * floor($w * 0.9 / $txtlen);
             $cheight = $size + ($size * 0.5);
             $y       = floor($h / 2 + $cheight / 3.8);
 
