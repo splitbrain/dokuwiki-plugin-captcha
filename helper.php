@@ -92,7 +92,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $out .= ' <input type="text" size="'.$txtlen.'" maxlength="'.$txtlen.'" name="'.$this->field_in.'" class="edit" /> ';
 
         // add honeypot field
-        $out .= '<label class="no">Please keep this field empty: <input type="text" name="'.$this->field_hp.'" /></label>';
+        $out .= '<label class="no">'.$this->getLang('honeypot').'<input type="text" name="'.$this->field_hp.'" /></label>';
         $out .= '</div>';
         return $out;
     }
