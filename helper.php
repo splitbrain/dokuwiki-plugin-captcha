@@ -44,6 +44,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
             $code = $this->_generateMATH($this->_fixedIdent(), $rand);
             $code = $code[0];
             $text = $this->getLang('fillmath');
+        } elseif($this->getConf('mode') == 'question') {
+            $text = $this->getConf('question');
         } else {
             $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
             $text = $this->getLang('fillcaptcha');
@@ -89,7 +91,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
                 }
                 break;
         }
-        $out .= ' <input type="text" size="'.$txtlen.'" maxlength="'.$txtlen.'" name="'.$this->field_in.'" class="edit" /> ';
+        $out .= ' <input type="text" size="'.$txtlen.'" name="'.$this->field_in.'" class="edit" /> ';
 
         // add honeypot field
         $out .= '<label class="no">'.$this->getLang('honeypot').'<input type="text" name="'.$this->field_hp.'" /></label>';
@@ -110,13 +112,15 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         if($this->getConf('mode') == 'math') {
             $code = $this->_generateMATH($this->_fixedIdent(), $rand);
             $code = $code[1];
+        } elseif($this->getConf('mode') == 'question') {
+            $code = $this->getConf('answer');
         } else {
             $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
         }
 
         if(!$_REQUEST[$this->field_sec] ||
             !$_REQUEST[$this->field_in] ||
-            strtoupper($_REQUEST[$this->field_in]) != $code ||
+            utf8_strtolower($_REQUEST[$this->field_in]) != utf8_strtolower($code) ||
             trim($_REQUEST[$this->field_hp]) !== ''
         ) {
             if($msg) msg($this->getLang('testfailed'), -1);
