@@ -17,3 +17,7 @@
 .dokuwiki #plugin__captcha_wrapper .no {
     display: none;
 }
+
+.dokuwiki #plugin__captcha_wrapper {
+clear: left;
+}
