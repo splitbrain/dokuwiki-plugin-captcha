@@ -50,7 +50,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
             $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
             $text = $this->getLang('fillcaptcha');
         }
-        $secret = PMA_blowfish_encrypt($rand, auth_cookiesalt());
+        $secret = $this->encrypt($rand);
 
         $txtlen = $this->getConf('lettercount');
 
@@ -107,7 +107,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      */
     public function check($msg = true) {
         // compare provided string with decrypted captcha
-        $rand = PMA_blowfish_decrypt($_REQUEST[$this->field_sec], auth_cookiesalt());
+        $rand = $this->decrypt($_REQUEST[$this->field_sec]);
 
         if($this->getConf('mode') == 'math') {
             $code = $this->_generateMATH($this->_fixedIdent(), $rand);
@@ -284,4 +284,35 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         imagedestroy($img);
     }
 
+    /**
+     * Encrypt the given string with the cookie salt
+     *
+     * @param string $data
+     * @return string
+     */
+    public function encrypt($data) {
+        if(function_exists('auth_encrypt')) {
+            $data = auth_encrypt($data, auth_cookiesalt()); // since binky
+        } else {
+            $data = PMA_blowfish_encrypt($data, auth_cookiesalt()); // deprecated
+        }
+
+        return base64_encode($data);
+    }
+
+    /**
+     * Decrypt the given string with the cookie salt
+     *
+     * @param string $data
+     * @return string
+     */
+    public function decrypt($data) {
+        $data = base64_decode($data);
+
+        if(function_exists('auth_decrypt')) {
+            return auth_decrypt($data, auth_cookiesalt()); // since binky
+        } else {
+            return PMA_blowfish_decrypt($data, auth_cookiesalt()); // deprecated
+        }
+    }
 }

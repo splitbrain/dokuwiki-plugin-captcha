@@ -15,7 +15,7 @@ require_once(DOKU_INC.'inc/auth.php');
 $ID = $_REQUEST['id'];
 /** @var helper_plugin_captcha $plugin */
 $plugin = plugin_load('helper', 'captcha');
-$rand   = PMA_blowfish_decrypt($_REQUEST['secret'], auth_cookiesalt());
+$rand   = $plugin->decrypt($_REQUEST['secret']);
 $code   = $plugin->_generateCAPTCHA($plugin->_fixedIdent(), $rand);
 $plugin->_imageCAPTCHA($code);
 

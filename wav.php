@@ -21,7 +21,7 @@ if($plugin->getConf('mode') != 'audio') {
     exit;
 }
 
-$rand = PMA_blowfish_decrypt($_REQUEST['secret'], auth_cookiesalt());
+$rand = $plugin->decrypt($_REQUEST['secret']);
 $code = strtolower($plugin->_generateCAPTCHA($plugin->_fixedIdent(), $rand));
 
 // prepare an array of wavfiles
