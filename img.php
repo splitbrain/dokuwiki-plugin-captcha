@@ -12,7 +12,7 @@ define('DOKU_DISABLE_GZIP_OUTPUT', 1);
 require_once(DOKU_INC.'inc/init.php');
 require_once(DOKU_INC.'inc/auth.php');
 
-$ID     = $_REQUEST['id'];
+$ID = $_REQUEST['id'];
 /** @var helper_plugin_captcha $plugin */
 $plugin = plugin_load('helper', 'captcha');
 $rand   = PMA_blowfish_decrypt($_REQUEST['secret'], auth_cookiesalt());
