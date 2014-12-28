@@ -112,7 +112,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
 
     /**
      * Create the additional fields for the edit form
-     * @author     Myron Turner <turnermm02@shaw.ca>
+     * @author Myron Turner <turnermm02@shaw.ca>
      */
     function handle_editform_output(&$event, $param) {
         // check if source view -> no captcha needed
@@ -144,7 +144,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
      /**
       *  Insert captcha into login form if loginprotect is true
       *  @url parameter: chk=captcha_check, identifies login mode
-      * @author     Myron Turner <turnermm02@shaw.ca>
+      * @author Myron Turner <turnermm02@shaw.ca>
     */
     function handle_login_form(&$event, $param) {           
     	$pos = $event->data->findElementByAttribute('type', 'submit');      
@@ -153,12 +153,12 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         $event->data->_hidden['chk'] = 'captcha_check';  
         $event->data->insertElement($pos+1, $out);
     }     
-
+    
     /**
      *   Redirect with additional parameters if captcha fails and
      *   output  'testfailed' message on re-load      
      *
-     *   @url_params:
+     *   @url_params
      *         do=logout => to force logout
      *         capt=r  => to identify on reload that the captcha has failed
      *  
