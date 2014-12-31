@@ -21,3 +21,4 @@ $lang['width']      = "Width of the CAPTCHA image (pixel)";
 $lang['height']     = "Height of the CAPTCHA image (pixel)";
 $lang['question']   = "Question for fixed question mode";
 $lang['answer']     = "Answer for fixed question mode";
+$lang['loginprotect'] = "Protect login form";

@@ -63,6 +63,15 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
                 array('editform' => false, 'oldhook' => false)
             );
         }
+        if($this->getConf('loginprotect')) {        
+            $controller->register_hook(
+                'HTML_LOGINFORM_OUTPUT',
+                'BEFORE',
+                $this,
+                'handle_login_form',
+                array()
+            ); 
+      }          
     }
 
     /**
@@ -70,6 +79,12 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
      */
     function handle_act_preprocess(&$event, $param) {
         $act = $this->_act_clean($event->data);
+        
+        if($this->getConf('loginprotect')) {        
+            $this->handle_login();
+            return;
+        }
+        
         if(!('save' == $act || ($this->getConf('regprotect') &&
                 'register' == $act &&
                 $_POST['save']))
@@ -97,6 +112,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
 
     /**
      * Create the additional fields for the edit form
+     * @author Myron Turner <turnermm02@shaw.ca>
      */
     function handle_editform_output(&$event, $param) {
         // check if source view -> no captcha needed
@@ -125,7 +141,38 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
             $event->data->insertElement($pos++, $out);
         }
     }
-
+     /**
+      *  Insert captcha into login form if loginprotect is true
+      *  @url parameter: chk=captcha_check, identifies login mode
+      * @author Myron Turner <turnermm02@shaw.ca>
+    */
+    function handle_login_form(&$event, $param) {           
+    	$pos = $event->data->findElementByAttribute('type', 'submit');      
+        $helper = plugin_load('helper', 'captcha');
+        $out    = $helper->getHTML(); 
+        $event->data->_hidden['chk'] = 'captcha_check';  
+        $event->data->insertElement($pos+1, $out);
+    }     
+    
+    /**
+     *   Redirect with additional parameters if captcha fails and
+     *   output  'testfailed' message on re-load      
+     *
+     *   @url_param:  do=logout => to force logout
+     *  
+     * @author  Myron Turner <turnermm02@shaw.ca>     
+    */    
+    function handle_login() {
+        if(isset($_REQUEST['chk'])) {        
+            $helper = $this->loadHelper('captcha', true);
+            if(!$helper->check()) {
+                 msg($helper->getLang('testfailed'), -1);
+                $url = wl('',array('do'=>'logout'), true, '&') ;             
+                send_redirect($url);
+                exit();
+            }
+        }
+   }
     /**
      * Pre-Sanitize the action command
      *
