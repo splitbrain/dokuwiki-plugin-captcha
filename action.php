@@ -158,9 +158,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
      *   Redirect with additional parameters if captcha fails and
      *   output  'testfailed' message on re-load      
      *
-     *   @url_params
-     *         do=logout => to force logout
-     *         capt=r  => to identify on reload that the captcha has failed
+     *   @url_param:  do=logout => to force logout
      *  
      * @author  Myron Turner <turnermm02@shaw.ca>     
     */    
