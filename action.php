@@ -164,15 +164,13 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
      *  
      * @author  Myron Turner <turnermm02@shaw.ca>     
     */    
-    function handle_login() {                
-        if(isset($_REQUEST['capt']) && $_REQUEST['capt'] == 'r') {
-            msg($this->getLang('testfailed'), -1);
-        }
+    function handle_login() {
         if(isset($_REQUEST['chk'])) {        
             $helper = $this->loadHelper('captcha', true);
             if(!$helper->check()) {
-                $url = DOKU_URL . 'doku.php?&do=logout&capt=r';            
-                header("Location: $url");
+                 msg($helper->getLang('testfailed'), -1);
+                $url = wl('',array('do'=>'logout'), true, '&') ;             
+                send_redirect($url);
                 exit();
             }
         }
