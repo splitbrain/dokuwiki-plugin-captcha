@@ -57,7 +57,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $out = '';
         $out .= '<div id="plugin__captcha_wrapper">';
         $out .= '<input type="hidden" name="'.$this->field_sec.'" value="'.hsc($secret).'" />';
-        $out .= '<label for="plugin__captcha">'.$text.'</label> ';
+        $out .= '<label for="plugin__captcha">'.$text.'</label><br />';
 
         switch($this->getConf('mode')) {
             case 'math':
