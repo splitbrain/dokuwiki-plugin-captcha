@@ -107,22 +107,32 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @return bool true when the answer was correct, otherwise false
      */
     public function check($msg = true) {
-        // compare provided string with decrypted captcha
-        $rand = $this->decrypt($_REQUEST[$this->field_sec]);
+        global $INPUT;
 
-        if($this->getConf('mode') == 'math') {
-            $code = $this->_generateMATH($this->_fixedIdent(), $rand);
-            $code = $code[1];
-        } elseif($this->getConf('mode') == 'question') {
-            $code = $this->getConf('answer');
-        } else {
-            $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
+        $code = '';
+        $field_sec = $INPUT->str($this->field_sec);
+        $field_in  = $INPUT->str($this->field_in);
+        $field_hp  = $INPUT->str($this->field_hp);
+
+        // reconstruct captcha from provided $field_sec
+        if($field_sec) {
+            $rand = $this->decrypt($field_sec);
+
+            if($this->getConf('mode') == 'math') {
+                $code = $this->_generateMATH($this->_fixedIdent(), $rand);
+                $code = $code[1];
+            } elseif($this->getConf('mode') == 'question') {
+                $code = $this->getConf('answer');
+            } else {
+                $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
+            }
         }
 
-        if(!$_REQUEST[$this->field_sec] ||
-            !$_REQUEST[$this->field_in] ||
-            utf8_strtolower($_REQUEST[$this->field_in]) != utf8_strtolower($code) ||
-            trim($_REQUEST[$this->field_hp]) !== ''
+        // compare values
+        if(!$field_sec ||
+            !$field_in ||
+            utf8_strtolower($field_in) != utf8_strtolower($code) ||
+            trim($field_hp) !== ''
         ) {
             if($msg) msg($this->getLang('testfailed'), -1);
             return false;
