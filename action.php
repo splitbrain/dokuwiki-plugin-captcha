@@ -42,21 +42,35 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
             'handle_form_output',
             array()
         );
+
+        // inject in password reset
+        $controller->register_hook(
+            'HTML_RESENDPWDFORM_OUTPUT',
+            'BEFORE',
+            $this,
+            'handle_form_output',
+            array()
+        );
     }
 
     /**
      * Check if the current mode should be handled by CAPTCHA
      *
+     * Note: checking needs to be done when a form has been submitted, not when the form
+     * is shown for the first time. Except for the editing process this is not determined
+     * by $act alone but needs to inspect other input variables.
+     *
      * @param string $act cleaned action mode
      * @return bool
      */
-    protected function is_protected($act) {
+    protected function needs_checking($act) {
         global $INPUT;
 
         switch($act) {
             case 'save':
                 return true;
             case 'register':
+            case 'resendpwd':
                 return $INPUT->bool('save');
             default:
                 return false;
@@ -80,8 +94,9 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
             case 'save':
                 return 'preview';
             case 'register':
+            case 'resendpwd':
                 $INPUT->post->set('save', false);
-                return 'register';
+                return $act;
             default:
                 return $act;
         }
@@ -92,7 +107,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
      */
     public function handle_captcha_input(Doku_Event $event, $param) {
         $act = act_clean($event->data);
-        if(!$this->is_protected($act)) return;
+        if(!$this->needs_checking($act)) return;
 
         // do nothing if logged in user and no CAPTCHA required
         if(!$this->getConf('forusers') && $_SERVER['REMOTE_USER']) {
