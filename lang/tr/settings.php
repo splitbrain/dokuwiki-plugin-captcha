@@ -15,7 +15,6 @@ $lang['mode_o_image']  = "Resim (Kötü erişebilirlik)";
 $lang['mode_o_audio']  = "Resim+Ses (iyi erişebilirlik)";
 $lang['mode_o_figlet'] = "Figlet ASCII Art (kötü erişebilirlik)";
 
-$lang['regprotect'] = "Kayıt formu da korunsun mu?";
 $lang['forusers']   = "CAPTCHA giriş yapmış kullanıcılar için de kullanılsın mı?";
 $lang['lettercount']= "Kullanılacak harf sayısı (3-16). Karakter sayısını artırırsanız, resim genişliğinin de arttığından emin olunuz.";
 $lang['width']      = "CAPTCHA resminin genişliği (piksel)";

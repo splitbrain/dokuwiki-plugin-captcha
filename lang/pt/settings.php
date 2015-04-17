@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author André Neves <drakferion@gmail.com>
  */
 $lang['mode']                  = 'Que tipo de CAPTCHA usar?';
@@ -13,7 +13,6 @@ $lang['mode_o_question']       = 'Pergunta Fixa';
 $lang['mode_o_image']          = 'Imagem (má acessibilidade)';
 $lang['mode_o_audio']          = 'Imagem+Áudio (melhor acessibilidade)';
 $lang['mode_o_figlet']         = 'Arte em ASCII Figlet (má acessibilidade)';
-$lang['regprotect']            = 'Também proteger o formulário de registo?';
 $lang['forusers']              = 'Também usar CAPTCHA para utilizadores autenticados?';
 $lang['lettercount']           = 'Número de letras a usar (3-16). Se aumentar a quantidade, assegure-se de aumentar também a largura da imagem, abaixo.';
 $lang['width']                 = 'Largura da imagem CAPTCHA (pixel)';

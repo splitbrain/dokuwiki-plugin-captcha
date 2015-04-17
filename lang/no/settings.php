@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Pål Julius Skogholt <pal.julius@skogholt.org>
  */
 $lang['mode']                  = 'Hvilken type CAPTCHA vil du bruke?';
@@ -13,7 +13,6 @@ $lang['mode_o_question']       = 'Fast spørsmål';
 $lang['mode_o_image']          = 'Bilde (vanskelig tilgjengelig)';
 $lang['mode_o_audio']          = 'Bilde og lyd (bedre tilgjengelighet)';
 $lang['mode_o_figlet']         = 'Figlet ASCII-kunst (vanskelig tilgjengelig)';
-$lang['regprotect']            = 'Beskytt registreringsskjemaet også?';
 $lang['forusers']              = 'Bruke CAPTCHA for innlogga brukere?';
 $lang['lettercount']           = 'Antall bokstaver (3-16). Om du øker antallet må du også øke bredden av bildet under.';
 $lang['width']                 = 'Bredde på CAPTCHA-bildet (i piksler)';

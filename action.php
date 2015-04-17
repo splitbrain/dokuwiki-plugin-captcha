@@ -10,7 +10,6 @@
 if(!defined('DOKU_INC')) die();
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
 
-
 class action_plugin_captcha extends DokuWiki_Action_Plugin {
 
     /**
@@ -36,15 +35,13 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         );
 
         // inject in user registration
-        if($this->getConf('regprotect')) {
-            $controller->register_hook(
-                'HTML_REGISTERFORM_OUTPUT',
-                'BEFORE',
-                $this,
-                'handle_form_output',
-                array()
-            );
-        }
+        $controller->register_hook(
+            'HTML_REGISTERFORM_OUTPUT',
+            'BEFORE',
+            $this,
+            'handle_form_output',
+            array()
+        );
     }
 
     /**
@@ -52,9 +49,10 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
      */
     public function handle_captcha_input(Doku_Event $event, $param) {
         $act = act_clean($event->data);
-        if(!('save' == $act || ($this->getConf('regprotect') &&
-                'register' == $act &&
-                $_POST['save']))
+        if(!(
+            'save' == $act ||
+            ('register' == $act && $_POST['save'])
+        )
         ) {
             return; // nothing to do for us
         }
