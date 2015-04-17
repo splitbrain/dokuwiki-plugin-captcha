@@ -7,6 +7,7 @@
 
 $conf['mode']        = 'js';
 $conf['forusers']    = 0;
+$conf['loginprotect']= 0;
 $conf['lettercount'] = 5;
 $conf['width']       = 115;
 $conf['height']      = 22;

@@ -51,6 +51,25 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
             'handle_form_output',
             array()
         );
+
+        if($this->getConf('loginprotect')) {
+            // inject in login form
+            $controller->register_hook(
+                'HTML_LOGINFORM_OUTPUT',
+                'BEFORE',
+                $this,
+                'handle_form_output',
+                array()
+            );
+            // check on login
+            $controller->register_hook(
+                'AUTH_LOGIN_CHECK',
+                'BEFORE',
+                $this,
+                'handle_login',
+                array()
+            );
+        }
     }
 
     /**
@@ -72,6 +91,8 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
             case 'register':
             case 'resendpwd':
                 return $INPUT->bool('save');
+            case 'login':
+                // we do not handle this here, but in handle_login()
             default:
                 return false;
         }
@@ -97,13 +118,43 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
             case 'resendpwd':
                 $INPUT->post->set('save', false);
                 return $act;
+            case 'login':
+                // we do not handle this here, but in handle_login()
             default:
                 return $act;
         }
     }
 
     /**
-     * Will intercept the 'save' action and check for CAPTCHA first.
+     * Handles CAPTCHA check in login
+     *
+     * Logins happen very early in the DokuWiki lifecycle, so we have to intercept them
+     * in their own event.
+     *
+     * @param Doku_Event $event
+     * @param $param
+     */
+    public function handle_login(Doku_Event $event, $param) {
+        global $INPUT;
+        if(!$this->getConf('loginprotect')) return; // no protection wanted
+        if(!$INPUT->bool('u')) return; // this login was not triggered by a form
+
+        // we need to have $ID set for the captcha check
+        global $ID;
+        $ID = getID();
+
+        /** @var helper_plugin_captcha $helper */
+        $helper = plugin_load('helper', 'captcha');
+        if(!$helper->check()) {
+            $event->data['silent'] = true; // we have our own message
+            $event->result = false; // login fail
+            $event->preventDefault();
+            $event->stopPropagation();
+        }
+    }
+
+    /**
+     * Intercept all actions and check for CAPTCHA first.
      */
     public function handle_captcha_input(Doku_Event $event, $param) {
         $act = act_clean($event->data);
