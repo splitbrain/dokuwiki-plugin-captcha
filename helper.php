@@ -209,6 +209,19 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
     }
 
     /**
+     * Generate some numbers from a known string and random number
+     *
+     * @param $fixed string the fixed part, any string
+     * @param $rand  float  some random number between 0 and 1
+     * @return string
+     */
+    private function _generateNumbers($fixed, $rand) {
+        $fixed   = hexdec(substr(md5($fixed), 5, 5)); // use part of the md5 to generate an int
+        $rand = $rand * 0xFFFFF; // bitmask from the random number
+        return md5($rand ^ $fixed); // combine both values
+    }
+
+    /**
      * Generates a random char string
      *
      * @param $fixed string the fixed part, any string
@@ -216,8 +229,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @return string
      */
     public function _generateCAPTCHA($fixed, $rand) {
-        $fixed   = hexdec(substr(md5($fixed), 5, 5)); // use part of the md5 to generate an int
-        $numbers = md5($rand * $fixed); // combine both values
+        $numbers = $this->_generateNumbers($fixed, $rand);
 
         // now create the letters
         $code = '';
@@ -236,8 +248,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @return array taks, result
      */
     protected function _generateMATH($fixed, $rand) {
-        $fixed   = hexdec(substr(md5($fixed), 5, 5)); // use part of the md5 to generate an int
-        $numbers = md5($rand * $fixed); // combine both values
+        $numbers = $this->_generateNumbers($fixed, $rand);
 
         // first letter is the operator (+/-)
         $op  = (hexdec($numbers[0]) > 8) ? -1 : 1;

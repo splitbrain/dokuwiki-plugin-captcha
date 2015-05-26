@@ -75,6 +75,8 @@ class helper_plugin_captcha_test extends DokuWikiTest {
         $code = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand);
         $newcode = $helper->_generateCAPTCHA($helper->_fixedIdent().'X', $rand);
         $this->assertNotEquals($newcode, $code);
+        $newcode = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand+0.1);
+        $this->assertNotEquals($newcode, $code);
     }
 
 }
