@@ -233,7 +233,9 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
 
         // now create the letters
         $code = '';
-        for($i = 0; $i < ($this->getConf('lettercount') * 2); $i += 2) {
+        $lettercount = $this->getConf('lettercount') * 2;
+        if($lettercount > strlen($numbers)) $lettercount = strlen($numbers);
+        for($i = 0; $i < $lettercount; $i += 2) {
             $code .= chr(floor(hexdec($numbers[$i].$numbers[$i + 1]) / 10) + 65);
         }
 
