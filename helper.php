@@ -332,6 +332,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      */
     public function decrypt($data) {
         $data = base64_decode($data);
+        if($data === false || $data === '') return false;
 
         if(function_exists('auth_decrypt')) {
             return auth_decrypt($data, auth_cookiesalt()); // since binky
