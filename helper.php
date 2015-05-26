@@ -115,22 +115,21 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $field_hp  = $INPUT->str($this->field_hp);
 
         // reconstruct captcha from provided $field_sec
-        if($field_sec) {
-            $rand = $this->decrypt($field_sec);
+        $rand = $this->decrypt($field_sec);
 
-            if($this->getConf('mode') == 'math') {
-                $code = $this->_generateMATH($this->_fixedIdent(), $rand);
-                $code = $code[1];
-            } elseif($this->getConf('mode') == 'question') {
-                $code = $this->getConf('answer');
-            } else {
-                $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
-            }
+        if($this->getConf('mode') == 'math') {
+            $code = $this->_generateMATH($this->_fixedIdent(), $rand);
+            $code = $code[1];
+        } elseif($this->getConf('mode') == 'question') {
+            $code = $this->getConf('answer');
+        } else {
+            $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
         }
 
         // compare values
         if(!$field_sec ||
             !$field_in ||
+            $rand === false ||
             utf8_strtolower($field_in) != utf8_strtolower($code) ||
             trim($field_hp) !== ''
         ) {

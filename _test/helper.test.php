@@ -60,8 +60,9 @@ class helper_plugin_captcha_test extends DokuWikiTest {
 
         $rand = 0;
         $code = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand);
-        $INPUT->set($helper->get_field_sec(), $helper->encrypt($rand));
         $INPUT->set($helper->get_field_in(), $code);
+        $this->assertFalse($helper->check(false));
+        $INPUT->set($helper->get_field_sec(), $helper->encrypt($rand));
         $this->assertTrue($helper->check(false));
         $ID = 'test:fail';
         $this->assertFalse($helper->check(false));
