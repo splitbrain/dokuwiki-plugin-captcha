@@ -41,8 +41,8 @@ class helper_plugin_captcha_test extends DokuWikiTest {
         $this->assertNotSame(false, $secret);
         $this->assertSame($rand, $helper->decrypt($secret));
 
-        $this->assertSame(false, $helper->decrypt(''));
-        $this->assertSame(false, $helper->decrypt('X'));
+        $this->assertFalse($helper->decrypt(''));
+        $this->assertFalse($helper->decrypt('X'));
     }
 
     public function testCheck() {
