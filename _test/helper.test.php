@@ -27,6 +27,7 @@ class helper_plugin_captcha_test extends DokuWikiTest {
 
         $helper = new helper_plugin_captcha_public();
 
+        // generateCAPTCHA generates a maximum of 16 chars
         $code = $helper->_generateCAPTCHA("fixed", 0);
         $this->assertEquals(16, strlen($code));
     }
