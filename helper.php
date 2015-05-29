@@ -214,7 +214,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param $rand  float  some random number between 0 and 1
      * @return string
      */
-    private function _generateNumbers($fixed, $rand) {
+    protected function _generateNumbers($fixed, $rand) {
         $fixed   = hexdec(substr(md5($fixed), 5, 5)); // use part of the md5 to generate an int
         $rand = $rand * 0xFFFFF; // bitmask from the random number
         return md5($rand ^ $fixed); // combine both values
