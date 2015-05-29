@@ -115,22 +115,21 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $field_hp  = $INPUT->str($this->field_hp);
 
         // reconstruct captcha from provided $field_sec
-        if($field_sec) {
-            $rand = $this->decrypt($field_sec);
+        $rand = $this->decrypt($field_sec);
 
-            if($this->getConf('mode') == 'math') {
-                $code = $this->_generateMATH($this->_fixedIdent(), $rand);
-                $code = $code[1];
-            } elseif($this->getConf('mode') == 'question') {
-                $code = $this->getConf('answer');
-            } else {
-                $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
-            }
+        if($this->getConf('mode') == 'math') {
+            $code = $this->_generateMATH($this->_fixedIdent(), $rand);
+            $code = $code[1];
+        } elseif($this->getConf('mode') == 'question') {
+            $code = $this->getConf('answer');
+        } else {
+            $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
         }
 
         // compare values
         if(!$field_sec ||
             !$field_in ||
+            $rand === false ||
             utf8_strtolower($field_in) != utf8_strtolower($code) ||
             trim($field_hp) !== ''
         ) {
@@ -209,6 +208,19 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
     }
 
     /**
+     * Generate some numbers from a known string and random number
+     *
+     * @param $fixed string the fixed part, any string
+     * @param $rand  float  some random number between 0 and 1
+     * @return string
+     */
+    private function _generateNumbers($fixed, $rand) {
+        $fixed   = hexdec(substr(md5($fixed), 5, 5)); // use part of the md5 to generate an int
+        $rand = $rand * 0xFFFFF; // bitmask from the random number
+        return md5($rand ^ $fixed); // combine both values
+    }
+
+    /**
      * Generates a random char string
      *
      * @param $fixed string the fixed part, any string
@@ -216,12 +228,13 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @return string
      */
     public function _generateCAPTCHA($fixed, $rand) {
-        $fixed   = hexdec(substr(md5($fixed), 5, 5)); // use part of the md5 to generate an int
-        $numbers = md5($rand * $fixed); // combine both values
+        $numbers = $this->_generateNumbers($fixed, $rand);
 
         // now create the letters
         $code = '';
-        for($i = 0; $i < ($this->getConf('lettercount') * 2); $i += 2) {
+        $lettercount = $this->getConf('lettercount') * 2;
+        if($lettercount > strlen($numbers)) $lettercount = strlen($numbers);
+        for($i = 0; $i < $lettercount; $i += 2) {
             $code .= chr(floor(hexdec($numbers[$i].$numbers[$i + 1]) / 10) + 65);
         }
 
@@ -236,8 +249,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @return array taks, result
      */
     protected function _generateMATH($fixed, $rand) {
-        $fixed   = hexdec(substr(md5($fixed), 5, 5)); // use part of the md5 to generate an int
-        $numbers = md5($rand * $fixed); // combine both values
+        $numbers = $this->_generateNumbers($fixed, $rand);
 
         // first letter is the operator (+/-)
         $op  = (hexdec($numbers[0]) > 8) ? -1 : 1;
@@ -319,6 +331,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      */
     public function decrypt($data) {
         $data = base64_decode($data);
+        if($data === false || $data === '') return false;
 
         if(function_exists('auth_decrypt')) {
             return auth_decrypt($data, auth_cookiesalt()); // since binky
