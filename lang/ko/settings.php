@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- *
+ * 
  * @author Andreas Gohr <andi@splitbrain.org>
  * @author Myeongjin <aranet100@gmail.com>
  * @author chobkwon <chobkwon@gmail.com>
@@ -16,6 +16,7 @@ $lang['mode_o_image']          = '그림 (접근성이 낮음)';
 $lang['mode_o_audio']          = '그림+소리 (접근성이 더 나음)';
 $lang['mode_o_figlet']         = 'Figlet ASCII 아트 (접근성이 낮음)';
 $lang['forusers']              = '로그인한 사용자도 CAPTCHA(캡차)를 사용하겠습니까?';
+$lang['loginprotect']          = '로그인하려면 CAPTCHA(캡차)가 필요합니까?';
 $lang['lettercount']           = '사용할 글자 수. (3-16) 양을 증가하면, 아래 그림의 너비도 증가해야 합니다.';
 $lang['width']                 = 'CAPTCHA(캡차) 그림의 너비 (픽셀)';
 $lang['height']                = 'CAPTCHA(캡차) 그림의 높이 (픽셀)';
