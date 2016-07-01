@@ -2,14 +2,14 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Andreas Gohr <andi@splitbrain.org>
  * @author Myeongjin <aranet100@gmail.com>
  * @author chobkwon <chobkwon@gmail.com>
  */
 $lang['mode']                  = '어떤 CAPTCHA(캡차) 종류를 사용하겠습니까?';
 $lang['mode_o_js']             = '글자 (자바스크립트로 미리 채워짐)';
-$lang['mode_o_text']           = '글자 (설명서만)';
+$lang['mode_o_text']           = '글자 (설명문서만)';
 $lang['mode_o_math']           = '수학 문제';
 $lang['mode_o_question']       = '고정된 질문';
 $lang['mode_o_image']          = '그림 (접근성이 낮음)';
