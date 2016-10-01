@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Pål Julius Skogholt <pal.julius@skogholt.org>
  * @author Daniel Raknes <rada@jbv.no>
  */
