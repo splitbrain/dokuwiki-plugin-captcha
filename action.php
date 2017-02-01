@@ -215,6 +215,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         /** @var helper_plugin_captcha $helper */
         $helper = plugin_load('helper', 'captcha');
         $helper->_cleanCaptchaCookies();
+        touch($lastrun);
 
         $event->preventDefault();
         $event->stopPropagation();
