@@ -8,7 +8,9 @@
 if(!defined('DOKU_INC')) die();
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
 
-
+/**
+ * Class helper_plugin_captcha
+ */
 class helper_plugin_captcha extends DokuWiki_Plugin {
 
     protected $field_in = 'plugin__captcha';
@@ -41,11 +43,14 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         global $ID;
 
         $rand = (float) (rand(0, 10000)) / 10000;
+        $this->storeCaptchaCookie($this->_fixedIdent(), $rand);
+
         if($this->getConf('mode') == 'math') {
             $code = $this->_generateMATH($this->_fixedIdent(), $rand);
             $code = $code[0];
             $text = $this->getLang('fillmath');
         } elseif($this->getConf('mode') == 'question') {
+            $code = ''; // not used
             $text = $this->getConf('question');
         } else {
             $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
@@ -109,7 +114,6 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
     public function check($msg = true) {
         global $INPUT;
 
-        $code = '';
         $field_sec = $INPUT->str($this->field_sec);
         $field_in  = $INPUT->str($this->field_in);
         $field_hp  = $INPUT->str($this->field_hp);
@@ -131,12 +135,64 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
             !$field_in ||
             $rand === false ||
             utf8_strtolower($field_in) != utf8_strtolower($code) ||
-            trim($field_hp) !== ''
+            trim($field_hp) !== '' ||
+            !$this->retrieveCaptchaCookie($this->_fixedIdent(), $rand)
         ) {
             if($msg) msg($this->getLang('testfailed'), -1);
             return false;
         }
         return true;
+    }
+
+    /**
+     * Get the path where a capture cookie would be stored
+     *
+     * We use a daily temp directory which is easy to clean up
+     *
+     * @param $fixed string the fixed part, any string
+     * @param $rand  float  some random number between 0 and 1
+     * @return string the path to the cookie file
+     */
+    protected function getCaptchaCookiePath($fixed, $rand) {
+        global $conf;
+        $path = $conf['tmpdir'] . '/captcha/' . date('Y-m-d') . '/' . md5($fixed . $rand) . '.cookie';
+        io_makeFileDir($path);
+        return $path;
+    }
+
+    /**
+     * Creates a one time captcha cookie
+     *
+     * This is used to prevent replay attacks. It is generated when the captcha form
+     * is shown and checked with the captcha check. Since we can not be sure about the
+     * session state (might be closed or open) we're not using it.
+     *
+     * We're not using the stored values for displaying the captcha image (or audio)
+     * but continue to use our encryption scheme. This way it's still possible to have
+     * multiple captcha checks going on in parallel (eg. with multiple browser tabs)
+     *
+     * @param $fixed string the fixed part, any string
+     * @param $rand  float  some random number between 0 and 1
+     */
+    protected function storeCaptchaCookie($fixed, $rand) {
+        $cache = $this->getCaptchaCookiePath($fixed, $rand);
+        touch($cache);
+    }
+
+    /**
+     * Checks if the captcha cookie exists and deletes it
+     *
+     * @param $fixed string the fixed part, any string
+     * @param $rand  float  some random number between 0 and 1
+     * @return bool true if the cookie existed
+     */
+    protected function retrieveCaptchaCookie($fixed, $rand) {
+        $cache = $this->getCaptchaCookiePath($fixed, $rand);
+        if(file_exists($cache)) {
+            unlink($cache);
+            return true;
+        }
+        return false;
     }
 
     /**
