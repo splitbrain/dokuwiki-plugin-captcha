@@ -16,7 +16,7 @@ $ID = $_REQUEST['id'];
 /** @var $plugin helper_plugin_captcha */
 $plugin = plugin_load('helper', 'captcha');
 
-if($plugin->getConf('mode') != 'audio') {
+if($plugin->getConf('mode') != 'audio' && $plugin->getConf('mode') != 'svgaudio') {
     http_status(404);
     exit;
 }
