@@ -70,6 +70,15 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
                 array()
             );
         }
+
+        // clean up captcha cookies
+        $controller->register_hook(
+            'INDEXER_TASKS_RUN',
+            'AFTER',
+            $this,
+            'handle_indexer',
+            array()
+        );
     }
 
     /**
@@ -195,5 +204,20 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         $event->data->insertElement($pos + 1, $out);
     }
 
+    /**
+     * Clean cookies once per day
+     */
+    public function handle_indexer(Doku_Event $event, $param) {
+        $lastrun = getCacheName('captcha', '.captcha');
+        $last = @filemtime($lastrun);
+        if(time() - $last < 24 * 60 * 60) return;
+
+        /** @var helper_plugin_captcha $helper */
+        $helper = plugin_load('helper', 'captcha');
+        $helper->_cleanCaptchaCookies();
+
+        $event->preventDefault();
+        $event->stopPropagation();
+    }
 }
 

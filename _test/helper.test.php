@@ -5,12 +5,15 @@ class helper_plugin_captcha_public extends helper_plugin_captcha {
     public function get_field_in() {
         return $this->field_in;
     }
+
     public function get_field_sec() {
         return $this->field_sec;
     }
+
     public function get_field_hp() {
         return $this->field_hp;
     }
+
     public function storeCaptchaCookie($fixed, $rand) {
         parent::storeCaptchaCookie($fixed, $rand);
     }
@@ -90,10 +93,57 @@ class helper_plugin_captcha_test extends DokuWikiTest {
 
         $rand = 0;
         $code = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand);
-        $newcode = $helper->_generateCAPTCHA($helper->_fixedIdent().'X', $rand);
+        $newcode = $helper->_generateCAPTCHA($helper->_fixedIdent() . 'X', $rand);
         $this->assertNotEquals($newcode, $code);
-        $newcode = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand+0.1);
+        $newcode = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand + 0.1);
         $this->assertNotEquals($newcode, $code);
     }
 
+    public function testCleanup() {
+        // we need a complete fresh environment:
+        $this->setUpBeforeClass();
+
+        global $conf;
+        $path = $conf['tmpdir'] . '/captcha/';
+        $today = "$path/" . date('Y-m-d');
+
+        $helper = new helper_plugin_captcha_public();
+
+        // nothing at all
+        $dirs = glob("$path/*");
+        $this->assertEquals(array(), $dirs);
+
+        // store a cookie
+        $helper->storeCaptchaCookie('test', 0);
+
+        // nothing but today's data
+        $dirs = glob("$path/*");
+        $this->assertEquals(array($today), $dirs);
+
+        // add some fake cookies
+        io_saveFile("$path/2017-01-01/foo.cookie", '');
+        io_saveFile("$path/2017-01-02/foo.cookie", '');
+        io_saveFile("$path/2017-01-03/foo.cookie", '');
+        io_saveFile("$path/2017-01-04/foo.cookie", '');
+
+        // all directories there
+        $dirs = glob("$path/*");
+        $this->assertEquals(
+            array(
+                "$path/2017-01-01",
+                "$path/2017-01-02",
+                "$path/2017-01-03",
+                "$path/2017-01-04",
+                $today
+            ),
+            $dirs
+        );
+
+        // clean up
+        $helper->_cleanCaptchaCookies();
+
+        // nothing but today's data
+        $dirs = glob("$path/*");
+        $this->assertEquals(array($today), $dirs);
+    }
 }

@@ -6,7 +6,7 @@
 
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
+if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
 
 /**
  * Class helper_plugin_captcha
@@ -145,7 +145,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
     }
 
     /**
-     * Get the path where a capture cookie would be stored
+     * Get the path where a captcha cookie would be stored
      *
      * We use a daily temp directory which is easy to clean up
      *
@@ -158,6 +158,21 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $path = $conf['tmpdir'] . '/captcha/' . date('Y-m-d') . '/' . md5($fixed . $rand) . '.cookie';
         io_makeFileDir($path);
         return $path;
+    }
+
+    /**
+     * remove all outdated captcha cookies
+     */
+    public function _cleanCaptchaCookies() {
+        global $conf;
+        $path = $conf['tmpdir'] . '/captcha/';
+        $dirs = glob("$path/*", GLOB_ONLYDIR);
+        $today = date('Y-m-d');
+        foreach($dirs as $dir) {
+            if(basename($dir) === $today) continue;
+            if(!preg_match('/\/captcha\//', $dir)) continue; // safety net
+            io_rmdir($dir, true);
+        }
     }
 
     /**
@@ -210,9 +225,9 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         global $ID;
         $lm = @filemtime(wikiFN($ID));
         $td = date('Y-m-d');
-        return auth_browseruid().
-        auth_cookiesalt().
-        $ID.$lm.$td;
+        return auth_browseruid() .
+            auth_cookiesalt() .
+            $ID . $lm . $td;
     }
 
     /**
