@@ -11,6 +11,9 @@ class helper_plugin_captcha_public extends helper_plugin_captcha {
     public function get_field_hp() {
         return $this->field_hp;
     }
+    public function storeCaptchaCookie($fixed, $rand) {
+        parent::storeCaptchaCookie($fixed, $rand);
+    }
 }
 
 /**
@@ -59,12 +62,24 @@ class helper_plugin_captcha_test extends DokuWikiTest {
         $INPUT->set($helper->get_field_sec(), 'X');
         $this->assertFalse($helper->check(false));
 
+        // create the captcha and store the cookie
         $rand = 0;
         $code = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand);
+        $helper->storeCaptchaCookie($helper->_fixedIdent(), $rand);
+
+        // check with missing secrect -> fail
         $INPUT->set($helper->get_field_in(), $code);
         $this->assertFalse($helper->check(false));
+
+        // set secret -> success
         $INPUT->set($helper->get_field_sec(), $helper->encrypt($rand));
         $this->assertTrue($helper->check(false));
+
+        // try again, cookie is gone -> fail
+        $this->assertFalse($helper->check(true));
+
+        // set the cookie but change the ID -> fail
+        $helper->storeCaptchaCookie($helper->_fixedIdent(), $rand);
         $ID = 'test:fail';
         $this->assertFalse($helper->check(false));
     }
