@@ -12,6 +12,8 @@ $lang['mode_o_math']   = "Math Problem";
 $lang['mode_o_question'] = "Fixed Question";
 $lang['mode_o_image']  = "Image (bad accessibility)";
 $lang['mode_o_audio']  = "Image+Audio (better accessibility)";
+$lang['mode_o_svg']  = "SVG (bad accessibility, readable)";
+$lang['mode_o_svgaudio']  = "SVG+Audio (better accessibility, readable)";
 $lang['mode_o_figlet'] = "Figlet ASCII Art (bad accessibility)";
 
 $lang['forusers']   = "Use CAPTCHA for logged in users, too?";

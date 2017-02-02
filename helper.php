@@ -73,6 +73,20 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
             case 'js':
                 $out .= '<span id="plugin__captcha_code">'.$this->_obfuscateText($code).'</span>';
                 break;
+            case 'svg':
+                $out .= '<span class="svg" style="width:'.$this->getConf('width').'px; height:'.$this->getConf('height').'px">';
+                $out .= $this->_svgCAPTCHA($code);
+                $out .= '</span>';
+                break;
+            case 'svgaudio':
+                $out .= '<span class="svg" style="width:'.$this->getConf('width').'px; height:'.$this->getConf('height').'px">';
+                $out .= $this->_svgCAPTCHA($code);
+                $out .= '</span>';
+                $out .= '<a href="'.DOKU_BASE.'lib/plugins/captcha/wav.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'"'.
+                    ' class="JSnocheck" title="'.$this->getLang('soundlink').'">';
+                $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/sound.png" width="16" height="16"'.
+                    ' alt="'.$this->getLang('soundlink').'" /></a>';
+                break;
             case 'image':
                 $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/img.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'" '.
                     ' width="'.$this->getConf('width').'" height="'.$this->getConf('height').'" alt="" /> ';
@@ -376,6 +390,43 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         header("Content-type: image/png");
         imagepng($img);
         imagedestroy($img);
+    }
+
+    /**
+     * Create an SVG of the given text
+     *
+     * @param string $text
+     * @return string
+     */
+    public function _svgCAPTCHA($text) {
+        require_once(__DIR__ . '/EasySVG.php');
+
+        $fonts = glob(__DIR__ . '/fonts/*.svg');
+
+        $x = 0; // where we start to draw
+        $y = 100; // our max height
+
+        $svg = new EasySVG();
+
+        // draw the letters
+        $txtlen = strlen($text);
+        for($i = 0; $i < $txtlen; $i++) {
+            $char = $text[$i];
+            $size = rand($y / 2, $y - $y * 0.1); // 50-90%
+            $svg->setFontSVG($fonts[array_rand($fonts)]);
+
+            $svg->setFontSize($size);
+            $svg->setLetterSpacing(round(rand(1, 4) / 10, 2)); // 0.1 - 0.4
+            $svg->addText($char, $x, rand(0, round($y - $size))); // random up and down
+
+            list($w) = $svg->textDimensions($char);
+            $x += $w;
+        }
+
+        $svg->addAttribute('width', $x . 'px');
+        $svg->addAttribute('height', $y . 'px');
+        $svg->addAttribute('viewbox', "0 0 $x $y");
+        return $svg->asXML();
     }
 
     /**
