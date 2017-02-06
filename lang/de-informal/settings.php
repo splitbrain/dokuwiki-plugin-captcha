@@ -21,3 +21,5 @@ $lang['width']                 = 'Breite des CAPTCHA Bildes (in Pixel)';
 $lang['height']                = 'Höhe  des CAPTCHA Bildes (in Pixel)';
 $lang['question']              = 'Frage für den "Feste Frage" Modus.';
 $lang['answer']                = 'Antwort für den "Feste Frage" Modus.';
+$lang['inputlabel']            = 'Beschriftung für Eingabefeld nach dem Image anzeigen';
+$lang['honeypot']              = 'Honeypot einblenden';
