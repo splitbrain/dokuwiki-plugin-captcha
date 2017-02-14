@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Emmanuel Dupin <seedfloyd@gmail.com>
  * @author bruno <bruno@ninesys.fr>
  * @author Fabrice Dejaigher <fabrice@chtiland.com>
