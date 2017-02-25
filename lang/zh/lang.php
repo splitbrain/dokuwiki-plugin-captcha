@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Andreas Gohr <andi@splitbrain.org>
  * @author lainme <lainme993@gmail.com>
  */
