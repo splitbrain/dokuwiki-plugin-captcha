@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Antonin Komenda <gree@grees.net>
  * @author Jaroslav Lichtblau <jlichtblau@seznam.cz>
  */
