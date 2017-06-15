@@ -201,7 +201,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
         $out = $helper->getHTML();
 
         // new wiki - insert after the submit button
-        $event->data->insertElement($pos + 1, $out);
+        $event->data->insertElement($pos, $out);
     }
 
     /**
