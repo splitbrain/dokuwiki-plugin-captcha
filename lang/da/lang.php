@@ -4,9 +4,10 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
  * @author soer9648 <soer9648@eucl.dk>
+ * @author Tor Härnqvist <tor@harnqvist.se>
  */
-$lang['testfailed']            = 'Desværre, CAPTCHA blev ikke besvaret korrekt. Du er muligvis ikke et menneske?';
-$lang['fillcaptcha']           = 'Skriv venligst alle bogstaverne i boksen for at bevise at du er et menneske.';
-$lang['fillmath']              = 'Løs venligst følgende ligning for at bevise at du er et menneske.';
-$lang['soundlink']             = 'Hvis du ikke kan læse bogstaverne på skærmen, kan du downloade denne .wav-fil, for at få dem læst op.';
-$lang['honeypot']              = 'Hold venligst dette felt tomt:';
+$lang['testfailed']            = 'Tyvärr men svaret på CAPTCHA var inte korrekt. Kanske är du inte människa trots allt?';
+$lang['fillcaptcha']           = 'Var god fyll i alla bokstäver i fältet för att bevisa att du är en människa.';
+$lang['fillmath']              = 'Var god lös följande ekvation för att bevisa att du är en människa.';
+$lang['soundlink']             = 'Om du inte kan läsa bokstäverna på bilden, ladda ner denna .wav-fil för att få dem upplästa.';
+$lang['honeypot']              = 'Var god håll detta fält tomt:';

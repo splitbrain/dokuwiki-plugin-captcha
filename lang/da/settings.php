@@ -5,19 +5,22 @@
  *
  * @author soer9648 <soer9648@eucl.dk>
  * @author Jacob Palm <mail@jacobpalm.dk>
+ * @author Tor Härnqvist <tor@harnqvist.se>
  */
-$lang['mode']                  = 'Hvilken type CAPTCHA skal benyttes?';
-$lang['mode_o_js']             = 'Tekst (præudfyldt af JavaScript)';
-$lang['mode_o_text']           = 'Tekst (kun manuelt)';
-$lang['mode_o_math']           = 'Matematikproblem';
-$lang['mode_o_question']       = 'Løsning';
-$lang['mode_o_image']          = 'Billede (dårlig tilgængelighed)';
-$lang['mode_o_audio']          = 'Billede+Audio (bedre tilgængelighed)';
-$lang['mode_o_figlet']         = 'Figlet ASCII Art (dårlig tilgængelighed)';
-$lang['forusers']              = 'Benyt også CAPTCHA til brugere der er logget ind?';
-$lang['loginprotect']          = 'Kræv CAPTCHA ved login?';
-$lang['lettercount']           = 'Antal af bogstaver der skal benyttes (3-16). Hvis du øger antallet, skal du også huske at øge bredden af billedet herunder.';
-$lang['width']                 = 'Bredden af CAPTCHA-billedet (pixel)';
-$lang['height']                = 'Højden af CAPTCHA-billedet (pixel)';
-$lang['question']              = 'Spørgsmål til fast-spørgsmål-tilstand';
-$lang['answer']                = 'Svar til fast-spørgsmål-tilstand';
+$lang['mode']                  = 'Vilken typ av CAPTCHA vill du använda?';
+$lang['mode_o_js']             = 'Text (förifylld mha JavaScript)';
+$lang['mode_o_text']           = 'Text (endast manuell)';
+$lang['mode_o_math']           = 'Matematiskt problem';
+$lang['mode_o_question']       = 'Statisk frågeställning';
+$lang['mode_o_image']          = 'Bild (sämre tillgänglighet)';
+$lang['mode_o_audio']          = 'Bild+ljud (bättre tillgänglighet)';
+$lang['mode_o_svg']            = 'SVG (sämre tillgänglighet, läsbarhet)';
+$lang['mode_o_svgaudio']       = 'SVD+ljud (bättre tillgänglighet, läsbarhet)';
+$lang['mode_o_figlet']         = 'Figlet ASCII Art (sämre tillgänglighet)';
+$lang['forusers']              = 'Använd CAPTCHA även för inloggade användare?';
+$lang['loginprotect']          = 'Kräv CAPTCHA för att logga in?';
+$lang['lettercount']           = 'Antal bokstäver (3-16). Om du ökar antalet, se då till att även öka bredden på bilden nedan.';
+$lang['width']                 = 'Bredd på CAPTCHA-bilden (i pixlar)';
+$lang['height']                = 'Höjd på CAPTCHA-bilden (i pixlar)';
+$lang['question']              = 'Fråga till statisk frågeställning-inställning';
+$lang['answer']                = 'Svar till statisk frågeställning-inställning';
