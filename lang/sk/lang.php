@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Jozef Riha <jose1711@gmail.com>
  * @author Martin Michalek <michalek.dev@gmail.com>
  */
