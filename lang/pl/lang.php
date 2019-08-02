@@ -2,7 +2,7 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Paweł Jan Czochański <czochanski@gmail.com>
  */
 $lang['testfailed']            = 'Wybacz, ale CAPTCHA nie została uzupełniona poprawnie. Może wcale nie jesteś człowiekiem?';
