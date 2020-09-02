@@ -2,9 +2,9 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
+ * @author Paulo Schopf <pschopf@gmail.com>
  * @author André Neves <drakferion@gmail.com>
- * @author ANeves <drakferion@gmail.com>
  */
 $lang['mode']                  = 'Que tipo de CAPTCHA usar?';
 $lang['mode_o_js']             = 'Texto (pré-preenchido com JavaScript)';
@@ -13,6 +13,8 @@ $lang['mode_o_math']           = 'Problema Matemático';
 $lang['mode_o_question']       = 'Pergunta Fixa';
 $lang['mode_o_image']          = 'Imagem (má acessibilidade)';
 $lang['mode_o_audio']          = 'Imagem+Áudio (melhor acessibilidade)';
+$lang['mode_o_svg']            = 'SVG (má acessibilidade, legível)';
+$lang['mode_o_svgaudio']       = 'SVG+Áudio (melhor acessibilidade, legível)';
 $lang['mode_o_figlet']         = 'Arte em ASCII Figlet (má acessibilidade)';
 $lang['forusers']              = 'Também usar CAPTCHA para utilizadores autenticados?';
 $lang['loginprotect']          = 'Exigir um CAPTCHA para se autenticar.';
