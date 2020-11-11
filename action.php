@@ -1,4 +1,7 @@
 <?php
+
+use dokuwiki\Form\Form;
+
 /**
  * CAPTCHA antispam plugin
  *
@@ -10,8 +13,8 @@
 if(!defined('DOKU_INC')) die();
 if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
 
-class action_plugin_captcha extends DokuWiki_Action_Plugin {
-
+class action_plugin_captcha extends DokuWiki_Action_Plugin
+{
     /**
      * register the eventhandlers
      */
@@ -24,6 +27,11 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
             'handle_captcha_input',
             array()
         );
+
+        // modify Form objects
+        $controller->register_hook('FORM_EDIT_OUTPUT', 'BEFORE', $this, 'handle_form_output', []);
+        $controller->register_hook('FORM_REGISTER_OUTPUT', 'BEFORE', $this, 'handle_form_output', []);
+        $controller->register_hook('FORM_RESENDPWD_OUTPUT', 'BEFORE', $this, 'handle_form_output', []);
 
         // inject in edit form
         $controller->register_hook(
@@ -52,8 +60,10 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
             array()
         );
 
-        if($this->getConf('loginprotect')) {
+        if ($this->getConf('loginprotect')) {
             // inject in login form
+            $controller->register_hook('FORM_LOGIN_OUTPUT', 'BEFORE', $this, 'handle_form_output', []);
+
             $controller->register_hook(
                 'HTML_LOGINFORM_OUTPUT',
                 'BEFORE',
@@ -185,23 +195,32 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin {
     /**
      * Inject the CAPTCHA in a DokuForm
      */
-    public function handle_form_output(Doku_Event $event, $param) {
-        // get position of submit button
-        $pos = $event->data->findElementByAttribute('type', 'submit');
-        if(!$pos) return; // no button -> source view mode
-
+    public function handle_form_output(Doku_Event $event, $param)
+    {
         // do nothing if logged in user and no CAPTCHA required
-        if(!$this->getConf('forusers') && $_SERVER['REMOTE_USER']) {
+        if (!$this->getConf('forusers') && $_SERVER['REMOTE_USER']) {
             return;
         }
-
         // get the CAPTCHA
         /** @var helper_plugin_captcha $helper */
         $helper = plugin_load('helper', 'captcha');
-        $out = $helper->getHTML();
+        $html = $helper->getHTML();
 
-        // new wiki - insert before the submit button
-        $event->data->insertElement($pos, $out);
+         /** @var dokuwiki\Form\Form $form */
+        $form =& $event->data;
+
+        // find submit button in the edit form
+        if (is_a($form, Form::class)
+            // applicable to development snapshot 2020-10-13 or later
+            && (($pos = $form->findPositionByAttribute('type', 'submit')) !== false)
+        ) {
+            // insert CAPCHA before the submit button, no button -> source view mode
+            $form->addHTML($html, $pos);
+
+        } elseif (($pos = $form->findElementByAttribute('type', 'submit')) !== false) {
+            // applicable to 2020-07-29 "Hogfather" and older
+            $form->insertElement($pos, $html);
+        }
     }
 
     /**
