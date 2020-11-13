@@ -1,18 +1,12 @@
 <?php
 /**
+ * Class helper_plugin_captcha
+ *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
-
-// must be run within Dokuwiki
-if(!defined('DOKU_INC')) die();
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
-
-/**
- * Class helper_plugin_captcha
- */
-class helper_plugin_captcha extends DokuWiki_Plugin {
-
+class helper_plugin_captcha extends DokuWiki_Plugin
+{
     protected $field_in = 'plugin__captcha';
     protected $field_sec = 'plugin__captcha_secret';
     protected $field_hp = 'plugin__captcha_honeypot';
@@ -20,7 +14,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
     /**
      * Constructor. Initializes field names
      */
-    public function __construct() {
+    public function __construct()
+    {
         $this->field_in  = md5($this->_fixedIdent().$this->field_in);
         $this->field_sec = md5($this->_fixedIdent().$this->field_sec);
         $this->field_hp  = md5($this->_fixedIdent().$this->field_hp);
@@ -31,25 +26,29 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      *
      * @return bool true when the CAPTCHA should be used
      */
-    public function isEnabled() {
-        if(!$this->getConf('forusers') && $_SERVER['REMOTE_USER']) return false;
+    public function isEnabled()
+    {
+        if (!$this->getConf('forusers') && $_SERVER['REMOTE_USER']) return false;
         return true;
     }
 
     /**
      * Returns the HTML to display the CAPTCHA with the chosen method
+     *
+     * @return string
      */
-    public function getHTML() {
+    public function getHTML()
+    {
         global $ID;
 
         $rand = (float) (rand(0, 10000)) / 10000;
         $this->storeCaptchaCookie($this->_fixedIdent(), $rand);
 
-        if($this->getConf('mode') == 'math') {
+        if ($this->getConf('mode') == 'math') {
             $code = $this->_generateMATH($this->_fixedIdent(), $rand);
             $code = $code[0];
             $text = $this->getLang('fillmath');
-        } elseif($this->getConf('mode') == 'question') {
+        } elseif ($this->getConf('mode') == 'question') {
             $code = ''; // not used
             $text = $this->getConf('question');
         } else {
@@ -60,12 +59,11 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
 
         $txtlen = $this->getConf('lettercount');
 
-        $out = '';
-        $out .= '<div id="plugin__captcha_wrapper">';
+        $out = '<div id="plugin__captcha_wrapper">';
         $out .= '<input type="hidden" name="'.$this->field_sec.'" value="'.hsc($secret).'" />';
         $out .= '<label for="plugin__captcha">'.$text.'</label> ';
 
-        switch($this->getConf('mode')) {
+        switch ($this->getConf('mode')) {
             case 'math':
             case 'text':
                 $out .= $this->_obfuscateText($code);
@@ -102,7 +100,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
             case 'figlet':
                 require_once(dirname(__FILE__).'/figlet.php');
                 $figlet = new phpFiglet();
-                if($figlet->loadfont(dirname(__FILE__).'/figlet.flf')) {
+                if ($figlet->loadfont(dirname(__FILE__).'/figlet.flf')) {
                     $out .= '<pre>';
                     $out .= rtrim($figlet->fetch($code));
                     $out .= '</pre>';
@@ -125,7 +123,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param  bool $msg when true, an error will be signalled through the msg() method
      * @return bool true when the answer was correct, otherwise false
      */
-    public function check($msg = true) {
+    public function check($msg = true)
+    {
         global $INPUT;
 
         $field_sec = $INPUT->str($this->field_sec);
@@ -135,24 +134,24 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         // reconstruct captcha from provided $field_sec
         $rand = $this->decrypt($field_sec);
 
-        if($this->getConf('mode') == 'math') {
+        if ($this->getConf('mode') == 'math') {
             $code = $this->_generateMATH($this->_fixedIdent(), $rand);
             $code = $code[1];
-        } elseif($this->getConf('mode') == 'question') {
+        } elseif ($this->getConf('mode') == 'question') {
             $code = $this->getConf('answer');
         } else {
             $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
         }
 
         // compare values
-        if(!$field_sec ||
+        if (!$field_sec ||
             !$field_in ||
             $rand === false ||
             utf8_strtolower($field_in) != utf8_strtolower($code) ||
             trim($field_hp) !== '' ||
             !$this->retrieveCaptchaCookie($this->_fixedIdent(), $rand)
         ) {
-            if($msg) msg($this->getLang('testfailed'), -1);
+            if ($msg) msg($this->getLang('testfailed'), -1);
             return false;
         }
         return true;
@@ -167,9 +166,10 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param $rand  float  some random number between 0 and 1
      * @return string the path to the cookie file
      */
-    protected function getCaptchaCookiePath($fixed, $rand) {
+    protected function getCaptchaCookiePath($fixed, $rand)
+    {
         global $conf;
-        $path = $conf['tmpdir'] . '/captcha/' . date('Y-m-d') . '/' . md5($fixed . $rand) . '.cookie';
+        $path = $conf['tmpdir'] .'/captcha/'. date('Y-m-d') .'/'. md5($fixed . $rand) .'.cookie';
         io_makeFileDir($path);
         return $path;
     }
@@ -177,14 +177,15 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
     /**
      * remove all outdated captcha cookies
      */
-    public function _cleanCaptchaCookies() {
+    public function _cleanCaptchaCookies()
+    {
         global $conf;
-        $path = $conf['tmpdir'] . '/captcha/';
+        $path = $conf['tmpdir'] .'/captcha/';
         $dirs = glob("$path/*", GLOB_ONLYDIR);
         $today = date('Y-m-d');
-        foreach($dirs as $dir) {
-            if(basename($dir) === $today) continue;
-            if(!preg_match('/\/captcha\//', $dir)) continue; // safety net
+        foreach ($dirs as $dir) {
+            if (basename($dir) === $today) continue;
+            if (!preg_match('/\/captcha\//', $dir)) continue; // safety net
             io_rmdir($dir, true);
         }
     }
@@ -203,7 +204,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param $fixed string the fixed part, any string
      * @param $rand  float  some random number between 0 and 1
      */
-    protected function storeCaptchaCookie($fixed, $rand) {
+    protected function storeCaptchaCookie($fixed, $rand)
+    {
         $cache = $this->getCaptchaCookiePath($fixed, $rand);
         touch($cache);
     }
@@ -215,9 +217,10 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param $rand  float  some random number between 0 and 1
      * @return bool true if the cookie existed
      */
-    protected function retrieveCaptchaCookie($fixed, $rand) {
+    protected function retrieveCaptchaCookie($fixed, $rand)
+    {
         $cache = $this->getCaptchaCookiePath($fixed, $rand);
-        if(file_exists($cache)) {
+        if (file_exists($cache)) {
             unlink($cache);
             return true;
         }
@@ -235,13 +238,12 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      *
      * @return string
      */
-    public function _fixedIdent() {
+    public function _fixedIdent()
+    {
         global $ID;
         $lm = @filemtime(wikiFN($ID));
         $td = date('Y-m-d');
-        return auth_browseruid() .
-            auth_cookiesalt() .
-            $ID . $lm . $td;
+        return auth_browseruid() . auth_cookiesalt() . $ID . $lm . $td;
     }
 
     /**
@@ -252,7 +254,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param $text
      * @return string
      */
-    protected function _obfuscateText($text) {
+    protected function _obfuscateText($text)
+    {
         $new = '';
 
         $spaces = array(
@@ -281,10 +284,10 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         );
 
         $len = strlen($text);
-        for($i = 0; $i < $len - 1; $i++) {
+        for ($i = 0; $i < $len - 1; $i++) {
             $new .= $text{$i};
 
-            if(!is_numeric($text{$i + 1})) {
+            if (!is_numeric($text{$i + 1})) {
                 $new .= $spaces[array_rand($spaces)];
             }
         }
@@ -299,7 +302,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param $rand  float  some random number between 0 and 1
      * @return string
      */
-    protected function _generateNumbers($fixed, $rand) {
+    protected function _generateNumbers($fixed, $rand)
+    {
         $fixed   = hexdec(substr(md5($fixed), 5, 5)); // use part of the md5 to generate an int
         $rand = $rand * 0xFFFFF; // bitmask from the random number
         return md5($rand ^ $fixed); // combine both values
@@ -312,14 +316,15 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param $rand  float  some random number between 0 and 1
      * @return string
      */
-    public function _generateCAPTCHA($fixed, $rand) {
+    public function _generateCAPTCHA($fixed, $rand)
+    {
         $numbers = $this->_generateNumbers($fixed, $rand);
 
         // now create the letters
         $code = '';
         $lettercount = $this->getConf('lettercount') * 2;
-        if($lettercount > strlen($numbers)) $lettercount = strlen($numbers);
-        for($i = 0; $i < $lettercount; $i += 2) {
+        if ($lettercount > strlen($numbers)) $lettercount = strlen($numbers);
+        for ($i = 0; $i < $lettercount; $i += 2) {
             $code .= chr(floor(hexdec($numbers[$i].$numbers[$i + 1]) / 10) + 65);
         }
 
@@ -333,7 +338,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param $rand  float  some random number between 0 and 1
      * @return array taks, result
      */
-    protected function _generateMATH($fixed, $rand) {
+    protected function _generateMATH($fixed, $rand)
+    {
         $numbers = $this->_generateNumbers($fixed, $rand);
 
         // first letter is the operator (+/-)
@@ -341,7 +347,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $num = array(hexdec($numbers[1].$numbers[2]), hexdec($numbers[3]));
 
         // we only want positive results
-        if(($op < 0) && ($num[0] < $num[1])) rsort($num);
+        if (($op < 0) && ($num[0] < $num[1])) rsort($num);
 
         // prepare result and task text
         $res  = $num[0] + ($num[1] * $op);
@@ -355,7 +361,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      *
      * @param string $text the letters to display
      */
-    public function _imageCAPTCHA($text) {
+    public function _imageCAPTCHA($text)
+    {
         $w = $this->getConf('width');
         $h = $this->getConf('height');
 
@@ -367,14 +374,14 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         imagefill($img, 0, 0, $white);
 
         // add some lines as background noise
-        for($i = 0; $i < 30; $i++) {
+        for ($i = 0; $i < 30; $i++) {
             $color = imagecolorallocate($img, rand(100, 250), rand(100, 250), rand(100, 250));
             imageline($img, rand(0, $w), rand(0, $h), rand(0, $w), rand(0, $h), $color);
         }
 
         // draw the letters
         $txtlen = strlen($text);
-        for($i = 0; $i < $txtlen; $i++) {
+        for ($i = 0; $i < $txtlen; $i++) {
             $font  = $fonts[array_rand($fonts)];
             $color = imagecolorallocate($img, rand(0, 100), rand(0, 100), rand(0, 100));
             $size  = rand(floor($h / 1.8), floor($h * 0.7));
@@ -398,7 +405,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param string $text
      * @return string
      */
-    public function _svgCAPTCHA($text) {
+    public function _svgCAPTCHA($text)
+    {
         require_once(__DIR__ . '/EasySVG.php');
 
         $fonts = glob(__DIR__ . '/fonts/*.svg');
@@ -410,7 +418,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
 
         // draw the letters
         $txtlen = strlen($text);
-        for($i = 0; $i < $txtlen; $i++) {
+        for ($i = 0; $i < $txtlen; $i++) {
             $char = $text[$i];
             $size = rand($y / 2, $y - $y * 0.1); // 50-90%
             $svg->setFontSVG($fonts[array_rand($fonts)]);
@@ -435,8 +443,9 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param string $data
      * @return string
      */
-    public function encrypt($data) {
-        if(function_exists('auth_encrypt')) {
+    public function encrypt($data)
+    {
+        if (function_exists('auth_encrypt')) {
             $data = auth_encrypt($data, auth_cookiesalt()); // since binky
         } else {
             $data = PMA_blowfish_encrypt($data, auth_cookiesalt()); // deprecated
@@ -451,11 +460,12 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
      * @param string $data
      * @return string
      */
-    public function decrypt($data) {
+    public function decrypt($data)
+    {
         $data = base64_decode($data);
-        if($data === false || $data === '') return false;
+        if ($data === false || $data === '') return false;
 
-        if(function_exists('auth_decrypt')) {
+        if (function_exists('auth_decrypt')) {
             return auth_decrypt($data, auth_cookiesalt()); // since binky
         } else {
             return PMA_blowfish_decrypt($data, auth_cookiesalt()); // deprecated
