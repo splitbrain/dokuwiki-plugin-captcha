@@ -1,4 +1,7 @@
 <?php
+
+use dokuwiki\Utf8;
+
 /**
  * Class helper_plugin_captcha
  *
@@ -154,11 +157,19 @@ class helper_plugin_captcha extends DokuWiki_Plugin
             $code = $this->_generateCAPTCHA($this->_fixedIdent(), $rand);
         }
 
+        // set callable that converts string to lowercase
+        if (method_exists(Utf8\PhpString::class, 'strtolower')) {
+            $toLower = [Utf8\PhpString::class, 'strtolower'];
+        } else {
+            // fallback deprecated utf8_strtolower since 2019-06-09
+            $toLower = 'utf8_strtolower';
+        }
+
         // compare values
         if (!$field_sec ||
             !$field_in ||
             $rand === false ||
-            utf8_strtolower($field_in) != utf8_strtolower($code) ||
+            $toLower($field_in) != $toLower($code) ||
             trim($field_hp) !== '' ||
             !$this->retrieveCaptchaCookie($this->_fixedIdent(), $rand)
         ) {
