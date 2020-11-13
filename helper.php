@@ -56,65 +56,76 @@ class helper_plugin_captcha extends DokuWiki_Plugin
             $text = $this->getLang('fillcaptcha');
         }
         $secret = $this->encrypt($rand);
+        $query = 'secret='.rawurlencode($secret).'&id='.$ID;
 
         $txtlen = $this->getConf('lettercount');
 
-        $out = '<div id="plugin__captcha_wrapper">';
-        $out .= '<input type="hidden" name="'.$this->field_sec.'" value="'.hsc($secret).'" />';
-        $out .= '<label for="plugin__captcha">'.$text.'</label> ';
+        // audio support
+        if (in_array($this->getConf('mode'), ['svgaudio','audio'])) {
+            $soundIcon = '<img '. buildAttributes([
+                'src' => DOKU_BASE.'lib/plugins/captcha/sound.png',
+                'width'  => 16,
+                'height' => 16,
+                'alt' => $this->getLang('soundlink'),
+             ]).' />';
+            $audioButton = '<a '. buildAttributes([
+                    'href' => DOKU_BASE.'lib/plugins/captcha/wav.php?'.$query,
+                    'class' => 'JSnocheck',
+                    'title' => $this->getLang('soundlink'),
+            ]).'>'.$soundIcon.'</a>';
+        }
+
+        // build html of CAPTCHA UI
+        $html = '<div id="plugin__captcha_wrapper">';
+        $html .= '<input type="hidden" name="'.$this->field_sec.'" value="'.hsc($secret).'" />';
+        $html .= '<label for="plugin__captcha">'.$text.'</label> ';
 
         switch ($this->getConf('mode')) {
             case 'math':
             case 'text':
-                $out .= $this->_obfuscateText($code);
+                $html .= $this->_obfuscateText($code);
                 break;
             case 'js':
-                $out .= '<span id="plugin__captcha_code">'.$this->_obfuscateText($code).'</span>';
+                $html .= '<span id="plugin__captcha_code">'.$this->_obfuscateText($code).'</span>';
                 break;
             case 'svg':
-                $out .= '<span class="svg" style="width:'.$this->getConf('width').'px; height:'.$this->getConf('height').'px">';
-                $out .= $this->_svgCAPTCHA($code);
-                $out .= '</span>';
-                break;
             case 'svgaudio':
-                $out .= '<span class="svg" style="width:'.$this->getConf('width').'px; height:'.$this->getConf('height').'px">';
-                $out .= $this->_svgCAPTCHA($code);
-                $out .= '</span>';
-                $out .= '<a href="'.DOKU_BASE.'lib/plugins/captcha/wav.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'"'.
-                    ' class="JSnocheck" title="'.$this->getLang('soundlink').'">';
-                $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/sound.png" width="16" height="16"'.
-                    ' alt="'.$this->getLang('soundlink').'" /></a>';
+                $style = 'width:'.$this->getConf('width').'px; height:'.$this->getConf('height').'px;';
+                $html .= '<span class="svg" style="'.$style.'">'. $this->_svgCAPTCHA($code) .'</span>';
+                if ('svgaudio' == $this->getConf('mode')) {
+                    $html .= $audioButton;
+                }
                 break;
             case 'image':
-                $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/img.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'" '.
-                    ' width="'.$this->getConf('width').'" height="'.$this->getConf('height').'" alt="" /> ';
-                break;
             case 'audio':
-                $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/img.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'" '.
-                    ' width="'.$this->getConf('width').'" height="'.$this->getConf('height').'" alt="" /> ';
-                $out .= '<a href="'.DOKU_BASE.'lib/plugins/captcha/wav.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'"'.
-                    ' class="JSnocheck" title="'.$this->getLang('soundlink').'">';
-                $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/sound.png" width="16" height="16"'.
-                    ' alt="'.$this->getLang('soundlink').'" /></a>';
+                $html .= '<img '. buildAttributes([
+                    'src' => DOKU_BASE.'lib/plugins/captcha/img.php?'.$query,
+                    'width'  => $this->getConf('width'),
+                    'height' => $this->getConf('height'),
+                    'alt' => '',
+                ]).' /> ';
+                if ('audio' == $this->getConf('mode')) {
+                    $html .= $audioButton;
+                }
                 break;
             case 'figlet':
                 require_once(dirname(__FILE__).'/figlet.php');
                 $figlet = new phpFiglet();
                 if ($figlet->loadfont(dirname(__FILE__).'/figlet.flf')) {
-                    $out .= '<pre>';
-                    $out .= rtrim($figlet->fetch($code));
-                    $out .= '</pre>';
+                    $html .= '<pre>'. rtrim($figlet->fetch($code)) .'</pre>';
                 } else {
                     msg('Failed to load figlet.flf font file. CAPTCHA broken', -1);
                 }
                 break;
         }
-        $out .= ' <input type="text" size="'.$txtlen.'" name="'.$this->field_in.'" class="edit" /> ';
+        $html .= ' <input type="text" size="'.$txtlen.'" name="'.$this->field_in.'" class="edit" /> ';
 
         // add honeypot field
-        $out .= '<label class="no">'.$this->getLang('honeypot').'<input type="text" name="'.$this->field_hp.'" /></label>';
-        $out .= '</div>';
-        return $out;
+        $html .= '<label class="no">'.$this->getLang('honeypot')
+                .'<input type="text" name="'.$this->field_hp.'" />'
+                .'</label>';
+        $html .= '</div>';
+        return $html;
     }
 
     /**
