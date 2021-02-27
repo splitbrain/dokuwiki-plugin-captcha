@@ -16,7 +16,7 @@ jQuery(function () {
     /**
      * Add a HTML5 player for the audio version of the CAPTCHA
      */
-    var $audiolink = $wrap.find('a');
+    var $audiolink = $wrap.find('a.audiolink');
     if($audiolink.length) {
         var audio = document.createElement('audio');
         if(audio) {

@@ -83,7 +83,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
                 $out .= $this->_svgCAPTCHA($code);
                 $out .= '</span>';
                 $out .= '<a href="'.DOKU_BASE.'lib/plugins/captcha/wav.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'"'.
-                    ' class="JSnocheck" title="'.$this->getLang('soundlink').'">';
+                    ' class="JSnocheck audiolink" title="'.$this->getLang('soundlink').'">';
                 $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/sound.png" width="16" height="16"'.
                     ' alt="'.$this->getLang('soundlink').'" /></a>';
                 break;
@@ -95,7 +95,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
                 $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/img.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'" '.
                     ' width="'.$this->getConf('width').'" height="'.$this->getConf('height').'" alt="" /> ';
                 $out .= '<a href="'.DOKU_BASE.'lib/plugins/captcha/wav.php?secret='.rawurlencode($secret).'&amp;id='.$ID.'"'.
-                    ' class="JSnocheck" title="'.$this->getLang('soundlink').'">';
+                    ' class="JSnocheck audiolink" title="'.$this->getLang('soundlink').'">';
                 $out .= '<img src="'.DOKU_BASE.'lib/plugins/captcha/sound.png" width="16" height="16"'.
                     ' alt="'.$this->getLang('soundlink').'" /></a>';
                 break;
