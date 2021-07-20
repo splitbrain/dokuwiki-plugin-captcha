@@ -31,8 +31,8 @@ $wavs = array();
 $lettercount = $plugin->getConf('lettercount');
 if($lettercount > strlen($code)) $lettercount = strlen($code);
 for($i = 0; $i < $lettercount; $i++) {
-    $file = $lc.$code{$i}.'.wav';
-    if(!@file_exists($file)) $file = $en.$code{$i}.'.wav';
+    $file = $lc.$code[$i].'.wav';
+    if(!@file_exists($file)) $file = $en.$code[$i].'.wav';
     $wavs[] = $file;
 }
 
