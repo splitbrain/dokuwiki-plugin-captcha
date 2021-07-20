@@ -63,8 +63,12 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
         $out = '';
         $out .= '<div id="plugin__captcha_wrapper">';
         $out .= '<input type="hidden" name="'.$this->field_sec.'" value="'.hsc($secret).'" />';
-        $out .= '<label for="plugin__captcha">'.$text.'</label> ';
-
+		// show label of input field __before__ the "image" (added config option), by @Kai
+		if(!$this->getConf('inputlabel')) {
+          // this line is duplicated afterwards
+          $out .= '<label for="plugin__captcha">'.$text.'</label> ';
+        }
+        
         switch($this->getConf('mode')) {
             case 'math':
             case 'text':
@@ -111,10 +115,20 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
                 }
                 break;
         }
-        $out .= ' <input type="text" size="'.$txtlen.'" name="'.$this->field_in.'" class="edit" /> ';
 
-        // add honeypot field
-        $out .= '<label class="no">'.$this->getLang('honeypot').'<input type="text" name="'.$this->field_hp.'" /></label>';
+		// show label of input field __after__ the "image" (config option), by @Kai
+		if($this->getConf('inputlabel')) {
+          $out .= '<label for="plugin__captcha">'.$text.'</label> ';
+        }
+        // edit: added maxlength value, by @Kai
+        // $out .= ' <input type="text" size="'.$txtlen.'" name="'.$this->field_in.'" class="edit" /> ';
+        $out .= '<input type="text" size="'.$txtlen.'" maxlength="'.$txtlen.'" 
+                  name="'.$this->field_in.'" class="edit" /> ';
+		// added config option to show 'honeypot' or not, by @Kai
+		if($this->getConf('honeypot')) {
+          $out .= '<label class="no">'.$this->getLang('honeypot').'<input type="text" 
+                    name="'.$this->field_hp.'" /></label>';
+        }
         $out .= '</div>';
         return $out;
     }

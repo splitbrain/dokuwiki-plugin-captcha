@@ -13,3 +13,5 @@ $meta['width']       = array('numeric', '_pattern' => '/[0-9]+/');
 $meta['height']      = array('numeric', '_pattern' => '/[0-9]+/');
 $meta['question']    = array('string');
 $meta['answer']      = array('string');
+$meta['inputlabel']  = array('onoff');
+$meta['honeypot']	 = array('onoff');
