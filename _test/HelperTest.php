@@ -1,46 +1,33 @@
 <?php
 
-class helper_plugin_captcha_public extends helper_plugin_captcha {
+namespace dokuwiki\plugin\captcha\test;
 
-    public function get_field_in() {
-        return $this->field_in;
-    }
-
-    public function get_field_sec() {
-        return $this->field_sec;
-    }
-
-    public function get_field_hp() {
-        return $this->field_hp;
-    }
-
-    public function storeCaptchaCookie($fixed, $rand) {
-        parent::storeCaptchaCookie($fixed, $rand);
-    }
-}
+use DokuWikiTest;
 
 /**
  * @group plugin_captcha
  * @group plugins
  */
-class helper_plugin_captcha_test extends DokuWikiTest {
+class HelperTest extends DokuWikiTest
+{
 
     protected $pluginsEnabled = array('captcha');
 
-    public function testConfig() {
+    public function testConfig()
+    {
         global $conf;
         $conf['plugin']['captcha']['lettercount'] = 20;
 
-        $helper = new helper_plugin_captcha_public();
+        $helper = new \helper_plugin_captcha();
 
         // generateCAPTCHA generates a maximum of 16 chars
         $code = $helper->_generateCAPTCHA("fixed", 0);
         $this->assertEquals(16, strlen($code));
     }
 
-    public function testDecrypt() {
-
-        $helper = new helper_plugin_captcha_public();
+    public function testDecrypt()
+    {
+        $helper = new \helper_plugin_captcha();
 
         $rand = "12345";
         $secret = $helper->encrypt($rand);
@@ -51,45 +38,47 @@ class helper_plugin_captcha_test extends DokuWikiTest {
         $this->assertFalse($helper->decrypt('X'));
     }
 
-    public function testCheck() {
+    public function testCheck()
+    {
 
         global $INPUT, $ID;
 
-        $helper = new helper_plugin_captcha_public();
+        $helper = new \helper_plugin_captcha();
 
-        $INPUT->set($helper->get_field_hp(), '');
-        $INPUT->set($helper->get_field_in(), 'X');
-        $INPUT->set($helper->get_field_sec(), '');
+        $INPUT->set($this->getInaccessibleProperty($helper, 'field_hp'), '');
+        $INPUT->set($this->getInaccessibleProperty($helper, 'field_in'), 'X');
+        $INPUT->set($this->getInaccessibleProperty($helper, 'field_sec'), '');
 
         $this->assertFalse($helper->check(false));
-        $INPUT->set($helper->get_field_sec(), 'X');
+        $INPUT->set($this->getInaccessibleProperty($helper, 'field_sec'), 'X');
         $this->assertFalse($helper->check(false));
 
         // create the captcha and store the cookie
         $rand = 0;
         $code = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand);
-        $helper->storeCaptchaCookie($helper->_fixedIdent(), $rand);
+
+        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', [$helper->_fixedIdent(), $rand]);
 
         // check with missing secrect -> fail
-        $INPUT->set($helper->get_field_in(), $code);
+        $INPUT->set($this->getInaccessibleProperty($helper, 'field_in'), $code);
         $this->assertFalse($helper->check(false));
 
         // set secret -> success
-        $INPUT->set($helper->get_field_sec(), $helper->encrypt($rand));
+        $INPUT->set($this->getInaccessibleProperty($helper, 'field_sec'), $helper->encrypt($rand));
         $this->assertTrue($helper->check(false));
 
         // try again, cookie is gone -> fail
         $this->assertFalse($helper->check(true));
 
         // set the cookie but change the ID -> fail
-        $helper->storeCaptchaCookie($helper->_fixedIdent(), $rand);
+        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', [$helper->_fixedIdent(), $rand]);
         $ID = 'test:fail';
         $this->assertFalse($helper->check(false));
     }
 
-    public function testGenerate() {
-
-        $helper = new helper_plugin_captcha_public();
+    public function testGenerate()
+    {
+        $helper = new \helper_plugin_captcha();
 
         $rand = 0;
         $code = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand);
@@ -99,7 +88,8 @@ class helper_plugin_captcha_test extends DokuWikiTest {
         $this->assertNotEquals($newcode, $code);
     }
 
-    public function testCleanup() {
+    public function testCleanup()
+    {
         // we need a complete fresh environment:
         $this->setUpBeforeClass();
 
@@ -107,14 +97,14 @@ class helper_plugin_captcha_test extends DokuWikiTest {
         $path = $conf['tmpdir'] . '/captcha/';
         $today = "$path/" . date('Y-m-d');
 
-        $helper = new helper_plugin_captcha_public();
+        $helper = new \helper_plugin_captcha();
 
         // nothing at all
         $dirs = glob("$path/*");
         $this->assertEquals(array(), $dirs);
 
         // store a cookie
-        $helper->storeCaptchaCookie('test', 0);
+        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', ['test', 0]);
 
         // nothing but today's data
         $dirs = glob("$path/*");
@@ -134,7 +124,7 @@ class helper_plugin_captcha_test extends DokuWikiTest {
                 "$path/2017-01-02",
                 "$path/2017-01-03",
                 "$path/2017-01-04",
-                $today
+                $today,
             ),
             $dirs
         );
