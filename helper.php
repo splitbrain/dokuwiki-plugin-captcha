@@ -282,13 +282,13 @@ class helper_plugin_captcha extends DokuWiki_Plugin {
 
         $len = strlen($text);
         for($i = 0; $i < $len - 1; $i++) {
-            $new .= $text{$i};
+            $new .= $text[$i];
 
-            if(!is_numeric($text{$i + 1})) {
+            if(!is_numeric($text[$i + 1])) {
                 $new .= $spaces[array_rand($spaces)];
             }
         }
-        $new .= $text{$len - 1};
+        $new .= $text[$len - 1];
         return $new;
     }
 
