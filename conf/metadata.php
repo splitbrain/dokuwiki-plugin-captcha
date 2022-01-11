@@ -20,7 +20,7 @@ $meta['mode'] = array(
     ),
 );
 $meta['forusers'] = array('onoff');
-$meta['loginprotect'] = array('onoff');
+$meta['loginprotect'] = array('multichoice', '_choices' => array(0, 1, 2));
 $meta['lettercount'] = array('numeric', '_min' => 3, '_max' => 16);
 $meta['width'] = array('numeric', '_pattern' => '/[0-9]+/');
 $meta['height'] = array('numeric', '_pattern' => '/[0-9]+/');

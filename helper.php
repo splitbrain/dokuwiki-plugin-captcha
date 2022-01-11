@@ -4,10 +4,6 @@
  * @author     Andreas Gohr <andi@splitbrain.org>
  */
 
-// must be run within Dokuwiki
-if (!defined('DOKU_INC')) die();
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC . 'lib/plugins/');
-
 /**
  * Class helper_plugin_captcha
  */
@@ -479,4 +475,5 @@ class helper_plugin_captcha extends DokuWiki_Plugin
             return PMA_blowfish_decrypt($data, auth_cookiesalt()); // deprecated
         }
     }
+
 }

@@ -17,9 +17,13 @@ $lang['mode_o_svgaudio'] = "SVG+Audio (better accessibility, readable)";
 $lang['mode_o_figlet'] = "Figlet ASCII Art (bad accessibility)";
 
 $lang['forusers'] = "Use CAPTCHA for logged in users, too?";
-$lang['loginprotect'] = "Require a CAPTCHA to login?";
 $lang['lettercount'] = "Number of letters to use (3-16). If you increase the amount, be sure to increase the width of the image below as well.";
 $lang['width'] = "Width of the CAPTCHA image (pixel)";
 $lang['height'] = "Height of the CAPTCHA image (pixel)";
 $lang['question'] = "Question for fixed question mode";
 $lang['answer'] = "Answer for fixed question mode";
+
+$lang['loginprotect'] = "Require a CAPTCHA to login?";
+$lang['loginprotect_o_0'] = 'Never';
+$lang['loginprotect_o_1'] = 'Always';
+$lang['loginprotect_o_2'] = 'After 3 failed attempts';
