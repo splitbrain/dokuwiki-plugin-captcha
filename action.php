@@ -1,4 +1,7 @@
 <?php
+
+use dokuwiki\plugin\captcha\IpCounter;
+
 /**
  * CAPTCHA antispam plugin
  *
@@ -28,7 +31,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
         $controller->register_hook('HTML_RESENDPWDFORM_OUTPUT', 'BEFORE', $this, 'handle_form_output', []); //old
         $controller->register_hook('FORM_RESENDPWD_OUTPUT', 'BEFORE', $this, 'handle_form_output', []); //new
 
-        if ($this->getConf('loginprotect')) {
+        if ($this->protectLogin()) {
             // inject in login form
             $controller->register_hook('HTML_LOGINFORM_OUTPUT', 'BEFORE', $this, 'handle_form_output', []); // old
             $controller->register_hook('FORM_LOGIN_OUTPUT', 'BEFORE', $this, 'handle_form_output', []); // new
@@ -39,6 +42,13 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
 
         // clean up captcha cookies
         $controller->register_hook('INDEXER_TASKS_RUN', 'AFTER', $this, 'handle_indexer', []);
+
+        $onk = $this->getConf('loginprotect');
+
+        // log authentication failures
+        if ((int)$this->getConf('loginprotect') > 1) {
+            $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'handle_auth', []);
+        }
     }
 
     /**
@@ -97,6 +107,20 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
     }
 
     /**
+     * Should a login CAPTCHA be used?
+     *
+     * @return bool
+     */
+    protected function protectLogin()
+    {
+        $config = (int)$this->getConf('loginprotect');
+        if ($config < 1) return false; // not wanted
+        if ($config === 1) return true; // always wanted
+        $count = (new IpCounter())->get();
+        return $count > 2; // only after 3 failed attempts
+    }
+
+    /**
      * Handles CAPTCHA check in login
      *
      * Logins happen very early in the DokuWiki lifecycle, so we have to intercept them
@@ -108,7 +132,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
     public function handle_login(Doku_Event $event, $param)
     {
         global $INPUT;
-        if (!$this->getConf('loginprotect')) return; // no protection wanted
+        if (!$this->protectLogin()) return; // no protection wanted
         if (!$INPUT->bool('u')) return; // this login was not triggered by a form
 
         // we need to have $ID set for the captcha check
@@ -196,6 +220,32 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
 
         $event->preventDefault();
         $event->stopPropagation();
+    }
+
+    /**
+     * Count failed login attempts
+     */
+    public function handle_auth(Doku_Event $event, $param)
+    {
+        global $INPUT;
+        $act = act_clean($event->data);
+        if (
+            $act != 'logout' &&
+            $INPUT->has('u') &&
+            empty($INPUT->server->str('http_credentials')) &&
+            empty($INPUT->server->str('REMOTE_USER'))
+        ) {
+            // This is a failed authentication attempt, count it
+            (new IpCounter())->increment();
+        }
+
+        if (
+            $act == 'login' &&
+            !empty($INPUT->server->str('REMOTE_USER'))
+        ) {
+            // This is a successful login, reset the counter
+            (new IpCounter())->reset();
+        }
     }
 }
 

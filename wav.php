@@ -6,17 +6,17 @@
  * @author     Andreas Gohr <gohr@cosmocode.de>
  */
 
-if(!defined('DOKU_INC')) define('DOKU_INC', dirname(__FILE__).'/../../../');
+if (!defined('DOKU_INC')) define('DOKU_INC', dirname(__FILE__) . '/../../../');
 define('NOSESSION', true);
 define('DOKU_DISABLE_GZIP_OUTPUT', 1);
-require_once(DOKU_INC.'inc/init.php');
-require_once(DOKU_INC.'inc/auth.php');
+require_once(DOKU_INC . 'inc/init.php');
+require_once(DOKU_INC . 'inc/auth.php');
 
 $ID = $_REQUEST['id'];
 /** @var $plugin helper_plugin_captcha */
 $plugin = plugin_load('helper', 'captcha');
 
-if($plugin->getConf('mode') != 'audio' && $plugin->getConf('mode') != 'svgaudio') {
+if ($plugin->getConf('mode') != 'audio' && $plugin->getConf('mode') != 'svgaudio') {
     http_status(404);
     exit;
 }
@@ -25,14 +25,14 @@ $rand = $plugin->decrypt($_REQUEST['secret']);
 $code = strtolower($plugin->_generateCAPTCHA($plugin->_fixedIdent(), $rand));
 
 // prepare an array of wavfiles
-$lc   = dirname(__FILE__).'/lang/'.$conf['lang'].'/audio/';
-$en   = dirname(__FILE__).'/lang/en/audio/';
+$lc = dirname(__FILE__) . '/lang/' . $conf['lang'] . '/audio/';
+$en = dirname(__FILE__) . '/lang/en/audio/';
 $wavs = array();
 $lettercount = $plugin->getConf('lettercount');
-if($lettercount > strlen($code)) $lettercount = strlen($code);
-for($i = 0; $i < $lettercount; $i++) {
-    $file = $lc.$code[$i].'.wav';
-    if(!@file_exists($file)) $file = $en.$code[$i].'.wav';
+if ($lettercount > strlen($code)) $lettercount = strlen($code);
+for ($i = 0; $i < $lettercount; $i++) {
+    $file = $lc . $code[$i] . '.wav';
+    if (!@file_exists($file)) $file = $en . $code[$i] . '.wav';
     $wavs[] = $file;
 }
 
@@ -51,24 +51,32 @@ echo joinwavs($wavs);
  * @link http://ccrma.stanford.edu/CCRMA/Courses/422/projects/WaveFormat/
  * @link http://www.thescripts.com/forum/thread3770.html
  */
-function joinwavs($wavs) {
+function joinwavs($wavs)
+{
     $fields = join(
         '/', array(
-                  'H8ChunkID', 'VChunkSize', 'H8Format',
-                  'H8Subchunk1ID', 'VSubchunk1Size',
-                  'vAudioFormat', 'vNumChannels', 'VSampleRate',
-                  'VByteRate', 'vBlockAlign', 'vBitsPerSample'
-             )
+            'H8ChunkID',
+            'VChunkSize',
+            'H8Format',
+            'H8Subchunk1ID',
+            'VSubchunk1Size',
+            'vAudioFormat',
+            'vNumChannels',
+            'VSampleRate',
+            'VByteRate',
+            'vBlockAlign',
+            'vBitsPerSample',
+        )
     );
 
     $data = '';
-    foreach($wavs as $wav) {
-        $fp     = fopen($wav, 'rb');
+    foreach ($wavs as $wav) {
+        $fp = fopen($wav, 'rb');
         $header = fread($fp, 36);
-        $info   = unpack($fields, $header);
+        $info = unpack($fields, $header);
 
         // read optional extra stuff
-        if($info['Subchunk1Size'] > 16) {
+        if ($info['Subchunk1Size'] > 16) {
             $header .= fread($fp, ($info['Subchunk1Size'] - 16));
         }
 
@@ -83,6 +91,6 @@ function joinwavs($wavs) {
         $data .= fread($fp, $size);
     }
 
-    return $header.pack('V', strlen($data)).$data;
+    return $header . pack('V', strlen($data)) . $data;
 }
 
