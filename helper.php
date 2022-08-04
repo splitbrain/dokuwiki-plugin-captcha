@@ -245,9 +245,10 @@ class helper_plugin_captcha extends DokuWiki_Plugin
         global $ID;
         $lm = @filemtime(wikiFN($ID));
         $td = date('Y-m-d');
-        return auth_browseruid() .
-            auth_cookiesalt() .
-            $ID . $lm . $td;
+        $ip = clientIP();
+        $salt = auth_cookiesalt();
+
+        return sha1(join("\n", [$ID, $lm, $td, $ip, $salt]));
     }
 
     /**
@@ -442,6 +443,34 @@ class helper_plugin_captcha extends DokuWiki_Plugin
     }
 
     /**
+     * Generate an audio captcha
+     *
+     * @param string $text
+     */
+    public function _audioCAPTCHA($text){
+        global $conf;
+
+        $lc = __DIR__ . '/lang/' . $conf['lang'] . '/audio/';
+        $en = __DIR__ . '/lang/en/audio/';
+
+        $wavs = [];
+
+        $text = strtolower($text);
+        $txtlen = strlen($text);
+        for ($i = 0; $i < $txtlen; $i++) {
+            $char = $text[$i];
+            $file = $lc . $char . '.wav';
+            if (!@file_exists($file)) $file = $en . $char . '.wav';
+            $wavs[] = $file;
+        }
+
+        header('Content-type: audio/x-wav');
+        header('Content-Disposition: attachment;filename=captcha.wav');
+
+        echo $this->joinwavs($wavs);
+    }
+
+    /**
      * Encrypt the given string with the cookie salt
      *
      * @param string $data
@@ -474,6 +503,60 @@ class helper_plugin_captcha extends DokuWiki_Plugin
         } else {
             return PMA_blowfish_decrypt($data, auth_cookiesalt()); // deprecated
         }
+    }
+
+
+    /**
+     * Join multiple wav files
+     *
+     * All wave files need to have the same format and need to be uncompressed.
+     * The headers of the last file will be used (with recalculated datasize
+     * of course)
+     *
+     * @link http://ccrma.stanford.edu/CCRMA/Courses/422/projects/WaveFormat/
+     * @link http://www.thescripts.com/forum/thread3770.html
+     */
+    protected function joinwavs($wavs)
+    {
+        $fields = join(
+            '/', array(
+                'H8ChunkID',
+                'VChunkSize',
+                'H8Format',
+                'H8Subchunk1ID',
+                'VSubchunk1Size',
+                'vAudioFormat',
+                'vNumChannels',
+                'VSampleRate',
+                'VByteRate',
+                'vBlockAlign',
+                'vBitsPerSample',
+            )
+        );
+
+        $data = '';
+        foreach ($wavs as $wav) {
+            $fp = fopen($wav, 'rb');
+            $header = fread($fp, 36);
+            $info = unpack($fields, $header);
+
+            // read optional extra stuff
+            if ($info['Subchunk1Size'] > 16) {
+                $header .= fread($fp, ($info['Subchunk1Size'] - 16));
+            }
+
+            // read SubChunk2ID
+            $header .= fread($fp, 4);
+
+            // read Subchunk2Size
+            $size = unpack('vsize', fread($fp, 4));
+            $size = $size['size'];
+
+            // read data
+            $data .= fread($fp, $size);
+        }
+
+        return $header . pack('V', strlen($data)) . $data;
     }
 
 }
