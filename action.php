@@ -173,7 +173,14 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
      */
     public function handle_form_output(Doku_Event $event, $param)
     {
-        if (!$this->protectLogin()) return; // no protection wanted
+        if (
+            ($event->name === 'FORM_LOGIN_OUTPUT' || $event->name === 'HTML_LOGINFORM_OUTPUT')
+            &&
+            !$this->protectLogin()
+        ) {
+            // no login protection wanted
+            return;
+        }
 
         /** @var \dokuwiki\Form\Form|\Doku_Form $form */
         $form = $event->data;
