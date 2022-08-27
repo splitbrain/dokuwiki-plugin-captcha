@@ -31,7 +31,8 @@ class helper_plugin_captcha extends DokuWiki_Plugin
      */
     public function isEnabled()
     {
-        if (!$this->getConf('forusers') && $_SERVER['REMOTE_USER']) return false;
+        global $INPUT;
+        if (!$this->getConf('forusers') && $INPUT->server->str('REMOTE_USER')) return false;
         return true;
     }
 

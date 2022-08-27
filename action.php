@@ -152,11 +152,13 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
      */
     public function handle_captcha_input(Doku_Event $event, $param)
     {
+        global $INPUT;
+
         $act = act_clean($event->data);
         if (!$this->needs_checking($act)) return;
 
         // do nothing if logged in user and no CAPTCHA required
-        if (!$this->getConf('forusers') && $_SERVER['REMOTE_USER']) {
+        if (!$this->getConf('forusers') && $INPUT->server->str('REMOTE_USER')) {
             return;
         }
 
@@ -173,6 +175,8 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
      */
     public function handle_form_output(Doku_Event $event, $param)
     {
+        global $INPUT;
+
         if (
             ($event->name === 'FORM_LOGIN_OUTPUT' || $event->name === 'HTML_LOGINFORM_OUTPUT')
             &&
@@ -194,7 +198,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
         if (!$pos) return; // no button -> source view mode
 
         // do nothing if logged in user and no CAPTCHA required
-        if (!$this->getConf('forusers') && $_SERVER['REMOTE_USER']) {
+        if (!$this->getConf('forusers') && $INPUT->server->str('REMOTE_USER')) {
             return;
         }
 
