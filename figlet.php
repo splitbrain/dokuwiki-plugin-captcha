@@ -136,7 +136,6 @@ class phpFiglet
         @reset($data);
 
         for ($i = 0; $i < $this->height; $i++) {
-            //while (list($k, $v) = each($data)) {
             foreach($data as $k => $v) {
                 $ret .= str_replace("\n", "", $v[$i]);
             }
