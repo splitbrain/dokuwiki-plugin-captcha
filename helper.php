@@ -150,7 +150,7 @@ class helper_plugin_captcha extends DokuWiki_Plugin
         if (!$field_sec ||
             !$field_in ||
             $rand === false ||
-            utf8_strtolower($field_in) != utf8_strtolower($code) ||
+            strtolower($field_in) != strtolower($code) ||
             trim($field_hp) !== '' ||
             !$this->retrieveCaptchaCookie($this->_fixedIdent(), $rand)
         ) {
