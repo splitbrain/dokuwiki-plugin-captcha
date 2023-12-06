@@ -42,7 +42,7 @@ class EasySVG
      * @param string $str
      * @return string
      */
-    private function _utf8ToUnicode($str)
+    private function utf8ToUnicode($str)
     {
         $unicode = [];
         $values = [];
@@ -154,7 +154,7 @@ class EasySVG
 
                 if ($name == 'glyph') {
                     $unicode = $z->getAttribute('unicode');
-                    $unicode = $this->_utf8ToUnicode($unicode);
+                    $unicode = $this->utf8ToUnicode($unicode);
 
                     if (isset($unicode[0])) {
                         $unicode = $unicode[0];
@@ -227,7 +227,7 @@ class EasySVG
         $horizAdvX = 0;
         $horizAdvY = $this->font->ascent + $this->font->descent;
         $fontSize = (float) $this->font->size / $this->font->unitsPerEm;
-        $text = $this->_utf8ToUnicode($text);
+        $text = $this->utf8ToUnicode($text);
         $counter = count($text);
 
         for ($i = 0; $i < $counter; $i++) {
@@ -250,7 +250,8 @@ class EasySVG
             $def[] = $d;
 
             // next letter's position
-            $horizAdvX += $this->font->glyphs[$letter]->horizAdvX * $fontSize + $this->font->em * $this->font->letterSpacing * $fontSize;
+            $horizAdvX += $this->font->glyphs[$letter]->horizAdvX * $fontSize +
+                $this->font->em * $this->font->letterSpacing * $fontSize;
         }
         return implode(' ', $def);
     }
@@ -263,7 +264,7 @@ class EasySVG
     public function textDimensions($text)
     {
         $fontSize = (float) $this->font->size / $this->font->unitsPerEm;
-        $text = $this->_utf8ToUnicode($text);
+        $text = $this->utf8ToUnicode($text);
 
         $lineWidth = 0;
         $lineHeight = ($this->font->ascent + $this->font->descent) * $fontSize * 2;
@@ -283,7 +284,8 @@ class EasySVG
                 continue;
             }
 
-            $lineWidth += $this->font->glyphs[$letter]->horizAdvX * $fontSize + $this->font->em * $this->font->letterSpacing * $fontSize;
+            $lineWidth += $this->font->glyphs[$letter]->horizAdvX * $fontSize +
+                $this->font->em * $this->font->letterSpacing * $fontSize;
         }
 
         // only keep the widest line's width
@@ -324,7 +326,7 @@ class EasySVG
         if ($is_unicode) {
             $letter = hexdec($char);
         } else {
-            $letter = $this->_utf8ToUnicode($char);
+            $letter = $this->utf8ToUnicode($char);
         }
 
         if (!isset($this->font->glyphs[$letter])) {
@@ -431,8 +433,8 @@ class EasySVG
                     // add new point's coordinates
                     $current_point = [$a * $x + $e, $b * $x + $f];
                     $new_coords = [...$new_coords, ...$current_point];
-                } // convert vertical lineto (relative)
-                elseif ($i == 'v') {
+                } elseif ($i == 'v') {
+                    // convert vertical lineto (relative)
                     $i = 'l';
                     $x = 0;
                     $y = (float) array_shift($coords);
@@ -440,8 +442,8 @@ class EasySVG
                     // add new point's coordinates
                     $current_point = [$c * $y + $e, $d * $y + $f];
                     $new_coords = [...$new_coords, ...$current_point];
-                } // convert quadratic bezier curve (relative)
-                elseif ($i == 'q') {
+                } elseif ($i == 'q') {
+                    // convert quadratic bezier curve (relative)
                     $x = (float) array_shift($coords);
                     $y = (float) array_shift($coords);
 
@@ -456,12 +458,11 @@ class EasySVG
                     // add new point's coordinates
                     $current_point = [$a * $x + $c * $y + $e, $b * $x + $d * $y + $f];
                     $new_coords = array_merge($new_coords, $current_point);
-                }
+                } else {
+                    // every other commands
+                    // @TODO: handle 'a,c,s' (elliptic arc curve) commands
+                    // cf. http://www.w3.org/TR/SVG/paths.html#PathDataCurveCommands
 
-                // every other commands
-                // @TODO: handle 'a,c,s' (elliptic arc curve) commands
-                // cf. http://www.w3.org/TR/SVG/paths.html#PathDataCurveCommands
-                else {
                     $x = (float) array_shift($coords);
                     $y = (float) array_shift($coords);
 
