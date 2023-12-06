@@ -11,20 +11,19 @@
  */
 class EasySVG
 {
-
     protected $font;
     protected $svg;
 
     public function __construct()
     {
         // default font data
-        $this->font = new stdClass;
+        $this->font = new stdClass();
         $this->font->id = '';
         $this->font->horizAdvX = 0;
         $this->font->unitsPerEm = 0;
         $this->font->ascent = 0;
         $this->font->descent = 0;
-        $this->font->glyphs = array();
+        $this->font->glyphs = [];
         $this->font->size = 20;
         $this->font->color = '';
         $this->font->lineHeight = 1;
@@ -45,8 +44,8 @@ class EasySVG
      */
     private function _utf8ToUnicode($str)
     {
-        $unicode = array();
-        $values = array();
+        $unicode = [];
+        $values = [];
         $lookingFor = 1;
 
         for ($i = 0; $i < strlen($str); $i++) {
@@ -62,7 +61,7 @@ class EasySVG
                         (($values[0] % 32) * 64) + ($values[1] % 64);
 
                     $unicode[] = $number;
-                    $values = array();
+                    $values = [];
                     $lookingFor = 1;
                 }
             }
@@ -133,8 +132,8 @@ class EasySVG
      */
     public function setFontSVG($filepath)
     {
-        $this->font->glyphs = array();
-        $z = new XMLReader;
+        $this->font->glyphs = [];
+        $z = new XMLReader();
         $z->open($filepath);
 
         // move to the first <product /> node
@@ -183,7 +182,7 @@ class EasySVG
      * @param array $attributes
      * @return SimpleXMLElement
      */
-    public function addPath($def, $attributes = array())
+    public function addPath($def, $attributes = [])
     {
         $path = $this->svg->addChild('path');
         foreach ($attributes as $key => $value) {
@@ -201,7 +200,7 @@ class EasySVG
      * @param array $attributes
      * @return SimpleXMLElement
      */
-    public function addText($text, $x = 0, $y = 0, $attributes = array())
+    public function addText($text, $x = 0, $y = 0, $attributes = [])
     {
         $def = $this->textDef($text);
 
@@ -223,15 +222,15 @@ class EasySVG
      */
     public function textDef($text)
     {
-        $def = array();
+        $def = [];
 
         $horizAdvX = 0;
         $horizAdvY = $this->font->ascent + $this->font->descent;
-        $fontSize = floatval($this->font->size) / $this->font->unitsPerEm;
+        $fontSize = (float) $this->font->size / $this->font->unitsPerEm;
         $text = $this->_utf8ToUnicode($text);
+        $counter = count($text);
 
-        for ($i = 0; $i < count($text); $i++) {
-
+        for ($i = 0; $i < $counter; $i++) {
             $letter = $text[$i];
 
             // line break support (10 is unicode for linebreak)
@@ -263,9 +262,7 @@ class EasySVG
      */
     public function textDimensions($text)
     {
-        $def = array();
-
-        $fontSize = floatval($this->font->size) / $this->font->unitsPerEm;
+        $fontSize = (float) $this->font->size / $this->font->unitsPerEm;
         $text = $this->_utf8ToUnicode($text);
 
         $lineWidth = 0;
@@ -273,9 +270,9 @@ class EasySVG
 
         $width = 0;
         $height = $lineHeight;
+        $counter = count($text);
 
-        for ($i = 0; $i < count($text); $i++) {
-
+        for ($i = 0; $i < $counter; $i++) {
             $letter = $text[$i];
 
             // line break support (10 is unicode for linebreak)
@@ -292,7 +289,7 @@ class EasySVG
         // only keep the widest line's width
         $width = $lineWidth > $width ? $lineWidth : $width;
 
-        return array($width, $height);
+        return [$width, $height];
     }
 
     /**
@@ -304,7 +301,7 @@ class EasySVG
     {
 
         $horizAdvY = $this->font->ascent + $this->font->descent;
-        $fontSize = floatval($this->font->size) / $this->font->unitsPerEm;
+        $fontSize = (float) $this->font->size / $this->font->unitsPerEm;
 
         // extract character definition
         $d = $this->font->glyphs[hexdec($unicode)]->d;
@@ -334,7 +331,7 @@ class EasySVG
             return null;
         }
 
-        $fontSize = floatval($this->font->size) / $this->font->unitsPerEm;
+        $fontSize = (float) $this->font->size / $this->font->unitsPerEm;
         return $this->font->glyphs[$letter]->horizAdvX * $fontSize;
     }
 
@@ -347,7 +344,7 @@ class EasySVG
      */
     public function defTranslate($def, $x = 0, $y = 0)
     {
-        return $this->defApplyMatrix($def, array(1, 0, 0, 1, $x, $y));
+        return $this->defApplyMatrix($def, [1, 0, 0, 1, $x, $y]);
     }
 
     /**
@@ -362,7 +359,7 @@ class EasySVG
     {
         if ($x == 0 && $y == 0) {
             $angle = deg2rad($angle);
-            return $this->defApplyMatrix($def, array(cos($angle), sin($angle), -sin($angle), cos($angle), 0, 0));
+            return $this->defApplyMatrix($def, [cos($angle), sin($angle), -sin($angle), cos($angle), 0, 0]);
         }
 
         // rotate by a given point
@@ -381,7 +378,7 @@ class EasySVG
      */
     public function defScale($def, $x = 1, $y = 1)
     {
-        return $this->defApplyMatrix($def, array($x, 0, 0, $y, 0, 0));
+        return $this->defApplyMatrix($def, [$x, 0, 0, $y, 0, 0]);
     }
 
     /**
@@ -405,8 +402,6 @@ class EasySVG
 
         preg_match_all('/[a-zA-Z]+[^a-zA-Z]*/', $def, $instructions);
         $instructions = $instructions[0];
-
-        $return = '';
         foreach ($instructions as &$instruction) {
             $i = preg_replace('/[^a-zA-Z]*/', '', $instruction);
             preg_match_all('/\-?[0-9\.]+/', $instruction, $coords);
@@ -416,11 +411,10 @@ class EasySVG
                 continue;
             }
 
-            $new_coords = array();
+            $new_coords = [];
             while (count($coords) > 0) {
-
                 // do the matrix calculation stuff
-                list($a, $b, $c, $d, $e, $f) = $matrix;
+                [$a, $b, $c, $d, $e, $f] = $matrix;
 
                 // exception for relative instruction
                 if (preg_match('/[a-z]/', $i)) {
@@ -431,48 +425,36 @@ class EasySVG
                 // convert horizontal lineto (relative)
                 if ($i == 'h') {
                     $i = 'l';
-                    $x = floatval(array_shift($coords));
+                    $x = (float) array_shift($coords);
                     $y = 0;
 
                     // add new point's coordinates
-                    $current_point = array(
-                        $a * $x + $c * $y + $e,
-                        $b * $x + $d * $y + $f,
-                    );
-                    $new_coords = array_merge($new_coords, $current_point);
+                    $current_point = [$a * $x + $e, $b * $x + $f];
+                    $new_coords = [...$new_coords, ...$current_point];
                 } // convert vertical lineto (relative)
                 elseif ($i == 'v') {
                     $i = 'l';
                     $x = 0;
-                    $y = floatval(array_shift($coords));
+                    $y = (float) array_shift($coords);
 
                     // add new point's coordinates
-                    $current_point = array(
-                        $a * $x + $c * $y + $e,
-                        $b * $x + $d * $y + $f,
-                    );
-                    $new_coords = array_merge($new_coords, $current_point);
+                    $current_point = [$c * $y + $e, $d * $y + $f];
+                    $new_coords = [...$new_coords, ...$current_point];
                 } // convert quadratic bezier curve (relative)
                 elseif ($i == 'q') {
-                    $x = floatval(array_shift($coords));
-                    $y = floatval(array_shift($coords));
+                    $x = (float) array_shift($coords);
+                    $y = (float) array_shift($coords);
 
                     // add new point's coordinates
-                    $current_point = array(
-                        $a * $x + $c * $y + $e,
-                        $b * $x + $d * $y + $f,
-                    );
-                    $new_coords = array_merge($new_coords, $current_point);
+                    $current_point = [$a * $x + $c * $y + $e, $b * $x + $d * $y + $f];
+                    $new_coords = [...$new_coords, ...$current_point];
 
                     // same for 2nd point
-                    $x = floatval(array_shift($coords));
-                    $y = floatval(array_shift($coords));
+                    $x = (float) array_shift($coords);
+                    $y = (float) array_shift($coords);
 
                     // add new point's coordinates
-                    $current_point = array(
-                        $a * $x + $c * $y + $e,
-                        $b * $x + $d * $y + $f,
-                    );
+                    $current_point = [$a * $x + $c * $y + $e, $b * $x + $d * $y + $f];
                     $new_coords = array_merge($new_coords, $current_point);
                 }
 
@@ -480,17 +462,13 @@ class EasySVG
                 // @TODO: handle 'a,c,s' (elliptic arc curve) commands
                 // cf. http://www.w3.org/TR/SVG/paths.html#PathDataCurveCommands
                 else {
-                    $x = floatval(array_shift($coords));
-                    $y = floatval(array_shift($coords));
+                    $x = (float) array_shift($coords);
+                    $y = (float) array_shift($coords);
 
                     // add new point's coordinates
-                    $current_point = array(
-                        $a * $x + $c * $y + $e,
-                        $b * $x + $d * $y + $f,
-                    );
-                    $new_coords = array_merge($new_coords, $current_point);
+                    $current_point = [$a * $x + $c * $y + $e, $b * $x + $d * $y + $f];
+                    $new_coords = [...$new_coords, ...$current_point];
                 }
-
             }
 
             $instruction = $i . implode(',', $new_coords);

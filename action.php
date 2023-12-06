@@ -1,5 +1,9 @@
 <?php
 
+use dokuwiki\Extension\ActionPlugin;
+use dokuwiki\Extension\EventHandler;
+use dokuwiki\Extension\Event;
+use dokuwiki\Form\Form;
 use dokuwiki\plugin\captcha\IpCounter;
 
 /**
@@ -8,13 +12,12 @@ use dokuwiki\plugin\captcha\IpCounter;
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Andreas Gohr <gohr@cosmocode.de>
  */
-class action_plugin_captcha extends DokuWiki_Action_Plugin
+class action_plugin_captcha extends ActionPlugin
 {
-
     /**
      * register the eventhandlers
      */
-    public function register(Doku_Event_Handler $controller)
+    public function register(EventHandler $controller)
     {
         // check CAPTCHA success
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'handle_captcha_input', []);
@@ -41,7 +44,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
         // clean up captcha cookies
         $controller->register_hook('INDEXER_TASKS_RUN', 'AFTER', $this, 'handle_indexer', []);
 
-        $onk = $this->getConf('loginprotect');
+        $this->getConf('loginprotect');
 
         // log authentication failures
         if ((int)$this->getConf('loginprotect') > 1) {
@@ -124,10 +127,10 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
      * Logins happen very early in the DokuWiki lifecycle, so we have to intercept them
      * in their own event.
      *
-     * @param Doku_Event $event
+     * @param Event $event
      * @param $param
      */
-    public function handle_login(Doku_Event $event, $param)
+    public function handle_login(Event $event, $param)
     {
         global $INPUT;
         if (!$this->protectLogin()) return; // no protection wanted
@@ -150,7 +153,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
     /**
      * Intercept all actions and check for CAPTCHA first.
      */
-    public function handle_captcha_input(Doku_Event $event, $param)
+    public function handle_captcha_input(Event $event, $param)
     {
         global $INPUT;
 
@@ -173,7 +176,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
     /**
      * Inject the CAPTCHA in a DokuForm or \dokuwiki\Form\Form
      */
-    public function handle_form_output(Doku_Event $event, $param)
+    public function handle_form_output(Event $event, $param)
     {
         global $INPUT;
 
@@ -186,11 +189,11 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
             return;
         }
 
-        /** @var \dokuwiki\Form\Form|\Doku_Form $form */
+        /** @var Form|\Doku_Form $form */
         $form = $event->data;
 
         // get position of submit button
-        if (is_a($form, \dokuwiki\Form\Form::class)) {
+        if (is_a($form, Form::class)) {
             $pos = $form->findPositionByAttribute('type', 'submit');
         } else {
             $pos = $form->findElementByAttribute('type', 'submit');
@@ -208,7 +211,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
         $out = $helper->getHTML();
 
         // insert before the submit button
-        if (is_a($form, \dokuwiki\Form\Form::class)) {
+        if (is_a($form, Form::class)) {
             $form->addHTML($out, $pos);
         } else {
             $form->insertElement($pos, $out);
@@ -218,7 +221,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
     /**
      * Clean cookies once per day
      */
-    public function handle_indexer(Doku_Event $event, $param)
+    public function handle_indexer(Event $event, $param)
     {
         $lastrun = getCacheName('captcha', '.captcha');
         $last = @filemtime($lastrun);
@@ -226,7 +229,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
 
         /** @var helper_plugin_captcha $helper */
         $helper = plugin_load('helper', 'captcha');
-        $helper->_cleanCaptchaCookies();
+        $helper->cleanCaptchaCookies();
         touch($lastrun);
 
         $event->preventDefault();
@@ -236,7 +239,7 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
     /**
      * Count failed login attempts
      */
-    public function handle_auth(Doku_Event $event, $param)
+    public function handle_auth(Event $event, $param)
     {
         global $INPUT;
         $act = act_clean($event->data);
@@ -259,4 +262,3 @@ class action_plugin_captcha extends DokuWiki_Action_Plugin
         }
     }
 }
-

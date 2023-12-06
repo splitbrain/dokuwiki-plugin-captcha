@@ -21,7 +21,7 @@ class HelperTest extends DokuWikiTest
         $helper = new \helper_plugin_captcha();
 
         // generateCAPTCHA generates a maximum of 16 chars
-        $code = $helper->_generateCAPTCHA("fixed", 0);
+        $code = $helper->generateCaptchaCode("fixed", 0);
         $this->assertEquals(16, strlen($code));
     }
 
@@ -55,9 +55,9 @@ class HelperTest extends DokuWikiTest
 
         // create the captcha and store the cookie
         $rand = 0;
-        $code = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand);
+        $code = $helper->generateCaptchaCode($helper->fixedIdent(), $rand);
 
-        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', [$helper->_fixedIdent(), $rand]);
+        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', [$helper->fixedIdent(), $rand]);
 
         // check with missing secrect -> fail
         $INPUT->set($this->getInaccessibleProperty($helper, 'field_in'), $code);
@@ -71,7 +71,7 @@ class HelperTest extends DokuWikiTest
         $this->assertFalse($helper->check(true));
 
         // set the cookie but change the ID -> fail
-        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', [$helper->_fixedIdent(), $rand]);
+        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', [$helper->fixedIdent(), $rand]);
         $ID = 'test:fail';
         $this->assertFalse($helper->check(false));
     }
@@ -81,10 +81,10 @@ class HelperTest extends DokuWikiTest
         $helper = new \helper_plugin_captcha();
 
         $rand = 0;
-        $code = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand);
-        $newcode = $helper->_generateCAPTCHA($helper->_fixedIdent() . 'X', $rand);
+        $code = $helper->generateCaptchaCode($helper->fixedIdent(), $rand);
+        $newcode = $helper->generateCaptchaCode($helper->fixedIdent() . 'X', $rand);
         $this->assertNotEquals($newcode, $code);
-        $newcode = $helper->_generateCAPTCHA($helper->_fixedIdent(), $rand + 0.1);
+        $newcode = $helper->generateCaptchaCode($helper->fixedIdent(), $rand + 0.1);
         $this->assertNotEquals($newcode, $code);
     }
 
@@ -130,7 +130,7 @@ class HelperTest extends DokuWikiTest
         );
 
         // clean up
-        $helper->_cleanCaptchaCookies();
+        $helper->cleanCaptchaCookies();
 
         // nothing but today's data
         $dirs = glob("$path/*");
