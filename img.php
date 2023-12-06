@@ -21,7 +21,7 @@ $ID = $INPUT->str('id');
 /** @var helper_plugin_captcha $plugin */
 $plugin = plugin_load('helper', 'captcha');
 
-if ($plugin->getConf('mode') != 'audio' && $plugin->getConf('mode') != 'svgaudio') {
+if ($plugin->getConf('mode') != 'image' && $plugin->getConf('mode') != 'audio') {
     http_status(404);
     exit;
 }
