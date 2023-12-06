@@ -81,50 +81,34 @@ class helper_plugin_captcha extends Plugin
                 $out .= $this->obfuscateText($code);
                 break;
             case 'js':
-                $out .= '<span id="plugin__captcha_code">' . $this->obfuscateText($code) . '</span>';
+                $out .= sprintf('<span id="plugin__captcha_code">%s</span>', $this->obfuscateText($code));
                 break;
             case 'svg':
-                $out .= '<span class="svg" style="width:' . $this->getConf('width') . 'px; height:' . $this->getConf('height') . 'px">';
-                $out .= $this->svgCaptcha($code);
-                $out .= '</span>';
+                $out .= $this->htmlSvg($code);
                 break;
             case 'svgaudio':
-                $out .= '<span class="svg" style="width:' . $this->getConf('width') . 'px; height:' . $this->getConf('height') . 'px">';
-                $out .= $this->svgCaptcha($code);
-                $out .= '</span>';
-                $out .= '<a href="' . DOKU_BASE . 'lib/plugins/captcha/wav.php?secret=' . rawurlencode($secret) . '&amp;id=' . $ID . '"' .
-                    ' class="JSnocheck audiolink" title="' . $this->getLang('soundlink') . '">';
-                $out .= '<img src="' . DOKU_BASE . 'lib/plugins/captcha/sound.png" width="16" height="16"' .
-                    ' alt="' . $this->getLang('soundlink') . '" /></a>';
+                $out .= $this->htmlSvg($code);
+                $out .= $this->htmlAudioLink($secret, $ID);
                 break;
             case 'image':
-                $out .= '<img src="' . DOKU_BASE . 'lib/plugins/captcha/img.php?secret=' . rawurlencode($secret) . '&amp;id=' . $ID . '" ' .
-                    ' width="' . $this->getConf('width') . '" height="' . $this->getConf('height') . '" alt="" /> ';
+                $out .= $this->htmlImage($ID, $secret);
                 break;
             case 'audio':
-                $out .= '<img src="' . DOKU_BASE . 'lib/plugins/captcha/img.php?secret=' . rawurlencode($secret) . '&amp;id=' . $ID . '" ' .
-                    ' width="' . $this->getConf('width') . '" height="' . $this->getConf('height') . '" alt="" /> ';
-                $out .= '<a href="' . DOKU_BASE . 'lib/plugins/captcha/wav.php?secret=' . rawurlencode($secret) . '&amp;id=' . $ID . '"' .
-                    ' class="JSnocheck audiolink" title="' . $this->getLang('soundlink') . '">';
-                $out .= '<img src="' . DOKU_BASE . 'lib/plugins/captcha/sound.png" width="16" height="16"' .
-                    ' alt="' . $this->getLang('soundlink') . '" /></a>';
+                $out .= $this->htmlImage($ID, $secret);
+                $out .= $this->htmlAudioLink($secret, $ID);
                 break;
             case 'figlet':
-                require_once(__DIR__ . '/figlet.php');
-                $figlet = new phpFiglet();
-                if ($figlet->loadfont(__DIR__ . '/figlet.flf')) {
-                    $out .= '<pre>';
-                    $out .= rtrim($figlet->fetch($code));
-                    $out .= '</pre>';
-                } else {
-                    msg('Failed to load figlet.flf font file. CAPTCHA broken', -1);
-                }
+                $out .= $this->htmlFiglet($code);
                 break;
         }
         $out .= ' <input type="text" size="' . $txtlen . '" name="' . $this->field_in . '" class="edit" /> ';
 
         // add honeypot field
-        $out .= '<label class="no">' . $this->getLang('honeypot') . '<input type="text" name="' . $this->field_hp . '" /></label>';
+        $out .= sprintf(
+            '<label class="no">%s<input type="text" name="%s" /></label>',
+            $this->getLang('honeypot'),
+            $this->field_hp
+        );
         $out .= '</div>';
         return $out;
     }
@@ -375,6 +359,95 @@ class helper_plugin_captcha extends Plugin
         $svg->addAttribute('height', $y . 'px');
         $svg->addAttribute('viewbox', "0 0 $x $y");
         return $svg->asXML();
+    }
+
+    /**
+     * Inline SVG showing the given code
+     *
+     * @param string $code
+     * @return string
+     */
+    protected function htmlSvg($code)
+    {
+        return sprintf(
+            '<span class="svg" style="width:%spx; height:%spx">%s</span>',
+            $this->getConf('width'),
+            $this->getConf('height'),
+            $this->svgCaptcha($code)
+        );
+    }
+
+    /**
+     * HTML for an img tag for the image captcha
+     *
+     * @param string $ID the page ID this is displayed on
+     * @param string $secret the encrypted random number
+     * @return string
+     */
+    protected function htmlImage($ID, $secret)
+    {
+        $img = DOKU_BASE . 'lib/plugins/captcha/img.php';
+        $param = buildURLparams([
+            'secret' => $secret,
+            'id' => $ID,
+        ]);
+
+        return sprintf(
+            '<img src="%s?%s" width="%d" height="%d" alt="" />',
+            $img,
+            $param,
+            $this->getConf('width'),
+            $this->getConf('height')
+        );
+    }
+
+    /**
+     * HTML for a link to the audio captcha
+     *
+     * @param string $secret the encrypted random number
+     * @param string $ID the page ID this is displayed on
+     * @return string
+     */
+    protected function htmlAudioLink($secret, $ID)
+    {
+        $img = DOKU_BASE . 'lib/plugins/captcha/sound.png'; // FIXME use svg icon
+        $url = DOKU_BASE . 'lib/plugins/captcha/wav.php';
+        $param = buildURLparams([
+            'secret' => $secret,
+            'id' => $ID,
+        ]);
+
+        $icon = sprintf(
+            '<img src="%s" width="16" height="16" alt="%s" /></a>',
+            $img,
+            $this->getLang('soundlink')
+        );
+
+        return sprintf(
+            '<a href="%s?%s" class="JSnocheck audiolink" title="%s">%s</a>',
+            $url,
+            $param,
+            $this->getLang('soundlink'),
+            $icon
+        );
+    }
+
+    /**
+     * The HTML to show a figlet captcha
+     *
+     * @param string $code the code to display
+     * @return string
+     */
+    protected function htmlFiglet($code)
+    {
+        require_once(__DIR__ . '/figlet.php');
+        $figlet = new phpFiglet();
+        if ($figlet->loadfont(__DIR__ . '/figlet.flf')) {
+            return '<pre>' . rtrim($figlet->fetch($code)) . '</pre>';
+        } else {
+            msg('Failed to load figlet.flf font file. CAPTCHA broken', -1);
+        }
+        return 'FAIL';
     }
 
     // endregion
