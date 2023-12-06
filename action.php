@@ -4,6 +4,7 @@ use dokuwiki\Extension\ActionPlugin;
 use dokuwiki\Extension\EventHandler;
 use dokuwiki\Extension\Event;
 use dokuwiki\Form\Form;
+use dokuwiki\plugin\captcha\FileCookie;
 use dokuwiki\plugin\captcha\IpCounter;
 
 /**
@@ -227,9 +228,7 @@ class action_plugin_captcha extends ActionPlugin
         $last = @filemtime($lastrun);
         if (time() - $last < 24 * 60 * 60) return;
 
-        /** @var helper_plugin_captcha $helper */
-        $helper = plugin_load('helper', 'captcha');
-        $helper->cleanCaptchaCookies();
+        FileCookie::clean();
         touch($lastrun);
 
         $event->preventDefault();
