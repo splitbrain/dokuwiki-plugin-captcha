@@ -194,7 +194,8 @@ class helper_plugin_captcha extends Plugin
     {
         $ident = hexdec(substr(md5($ident), 5, 5)); // use part of the md5 to generate an int
         $rand *= 0xFFFFF; // bitmask from the random number
-        return md5($rand ^ $ident); // combine both values
+        $comb = (int) $rand ^ $ident; // combine both values
+        return md5($comb);
     }
 
     /**

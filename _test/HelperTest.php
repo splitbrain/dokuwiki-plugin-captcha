@@ -2,6 +2,7 @@
 
 namespace dokuwiki\plugin\captcha\test;
 
+use dokuwiki\plugin\captcha\FileCookie;
 use DokuWikiTest;
 
 /**
@@ -57,7 +58,8 @@ class HelperTest extends DokuWikiTest
         $rand = 0;
         $code = $helper->generateCaptchaCode($helper->fixedIdent(), $rand);
 
-        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', [$helper->fixedIdent(), $rand]);
+        $cookie = new FileCookie($helper->fixedIdent(), $rand);
+        $cookie->set();
 
         // check with missing secrect -> fail
         $INPUT->set($this->getInaccessibleProperty($helper, 'field_in'), $code);
@@ -71,7 +73,7 @@ class HelperTest extends DokuWikiTest
         $this->assertFalse($helper->check(true));
 
         // set the cookie but change the ID -> fail
-        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', [$helper->fixedIdent(), $rand]);
+        $cookie->set();
         $ID = 'test:fail';
         $this->assertFalse($helper->check(false));
     }
@@ -104,7 +106,8 @@ class HelperTest extends DokuWikiTest
         $this->assertEquals(array(), $dirs);
 
         // store a cookie
-        $this->callInaccessibleMethod($helper, 'storeCaptchaCookie', ['test', 0]);
+        $cookie = new FileCookie('test', 0);
+        $cookie->set();
 
         // nothing but today's data
         $dirs = glob("$path/*");
@@ -130,7 +133,7 @@ class HelperTest extends DokuWikiTest
         );
 
         // clean up
-        $helper->cleanCaptchaCookies();
+        FileCookie::clean();
 
         // nothing but today's data
         $dirs = glob("$path/*");

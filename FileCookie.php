@@ -26,8 +26,8 @@ class FileCookie
     public function __construct($ident, $rand)
     {
         global $conf;
-        $path = $conf['tmpdir'] . '/captcha/' . date('Y-m-d') . '/' . md5($ident . $rand) . '.cookie';
-        io_makeFileDir($path);
+        $this->path = $conf['tmpdir'] . '/captcha/' . date('Y-m-d') . '/' . md5($ident . $rand) . '.cookie';
+        io_makeFileDir($this->path);
     }
 
     /**
