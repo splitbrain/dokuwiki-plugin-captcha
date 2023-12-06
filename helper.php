@@ -194,7 +194,7 @@ class helper_plugin_captcha extends Plugin
     {
         $ident = hexdec(substr(md5($ident), 5, 5)); // use part of the md5 to generate an int
         $rand *= 0xFFFFF; // bitmask from the random number
-        $comb = (int) $rand ^ $ident; // combine both values
+        $comb = (int)$rand ^ $ident; // combine both values
         return md5($comb);
     }
 
@@ -411,24 +411,21 @@ class helper_plugin_captcha extends Plugin
      */
     protected function htmlAudioLink($secret, $ID)
     {
-        $img = DOKU_BASE . 'lib/plugins/captcha/sound.png'; // FIXME use svg icon
+
         $url = DOKU_BASE . 'lib/plugins/captcha/wav.php';
         $param = buildURLparams([
             'secret' => $secret,
             'id' => $ID,
         ]);
 
-        $icon = sprintf(
-            '<img src="%s" width="16" height="16" alt="%s" /></a>',
-            $img,
-            $this->getLang('soundlink')
-        );
+        $icon = inlineSVG(__DIR__ . '/ear-hearing.svg');
 
         return sprintf(
-            '<a href="%s?%s" class="JSnocheck audiolink" title="%s">%s</a>',
+            '<a href="%s?%s" class="JSnocheck audiolink" title="%s" style="height: %spx">%s</a>',
             $url,
             $param,
             $this->getLang('soundlink'),
+            $this->getConf('height'),
             $icon
         );
     }
