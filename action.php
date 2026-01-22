@@ -42,7 +42,7 @@ class action_plugin_captcha extends ActionPlugin
         $controller->register_hook('INDEXER_TASKS_RUN', 'AFTER', $this, 'handleIndexer', []);
 
         // log authentication failures
-        if ((int)$this->getConf('loginprotect') > 1) {
+        if ((int)$this->getConf('loginprotect') > 1 || (int)$this->getConf('logindenial') > 0) {
             $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'handleAuth', []);
         }
     }
@@ -117,6 +117,41 @@ class action_plugin_captcha extends ActionPlugin
     }
 
     /**
+     * Check if login is blocked due to timeout
+     *
+     * @return bool True if blocked
+     */
+    protected function isLoginBlocked()
+    {
+        $base = (int)$this->getConf('logindenial');
+        if ($base < 1) return false;
+        $counter = new IpCounter();
+        return $counter->getRemainingTime($base, $this->getConf('logindenial_max')) > 0;
+    }
+
+    /**
+     * Get human-readable remaining time string
+     *
+     * @return string
+     */
+    protected function getRemainingTimeString()
+    {
+        $counter = new IpCounter();
+        $remaining = $counter->getRemainingTime(
+            $this->getConf('logindenial'),
+            $this->getConf('logindenial_max')
+        );
+
+        if ($remaining >= 3600) {
+            return sprintf($this->getLang('timeout_hours'), ceil($remaining / 3600));
+        } elseif ($remaining >= 60) {
+            return sprintf($this->getLang('timeout_minutes'), ceil($remaining / 60));
+        } else {
+            return sprintf($this->getLang('timeout_seconds'), $remaining);
+        }
+    }
+
+    /**
      * Handles CAPTCHA check in login
      *
      * Logins happen very early in the DokuWiki lifecycle, so we have to intercept them
@@ -128,8 +163,20 @@ class action_plugin_captcha extends ActionPlugin
     public function handleLogin(Event $event, $param)
     {
         global $INPUT;
-        if (!$this->protectLogin()) return; // no protection wanted
         if (!$INPUT->bool('u')) return; // this login was not triggered by a form
+
+        // Check timeout first - if blocked, reject immediately
+        if ($this->isLoginBlocked()) {
+            $timeString = $this->getRemainingTimeString();
+            msg(sprintf($this->getLang('logindenial'), $timeString), -1);
+            $event->data['silent'] = true;
+            $event->result = false;
+            $event->preventDefault();
+            $event->stopPropagation();
+            return;
+        }
+
+        if (!$this->protectLogin()) return; // no CAPTCHA protection wanted
 
         // we need to have $ID set for the captcha check
         global $ID;
