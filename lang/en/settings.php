@@ -28,5 +28,5 @@ $lang['loginprotect_o_0'] = 'Never';
 $lang['loginprotect_o_1'] = 'Always';
 $lang['loginprotect_o_2'] = 'After 3 failed attempts';
 
-$lang['logindenial'] = "Base timeout in seconds for failed logins (0 to disable, doubles with each failure)";
-$lang['logindenial_max'] = "Maximum timeout in seconds";
+$lang['logindenial'] = 'Use exponential wait time for failed logins. Base wait in seconds (0 to disable, doubles with each failure)';
+$lang['logindenial_max'] = 'Maximum wait time in seconds';
