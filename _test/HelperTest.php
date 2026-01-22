@@ -96,13 +96,13 @@ class HelperTest extends DokuWikiTest
         $this->setUpBeforeClass();
 
         global $conf;
-        $path = $conf['tmpdir'] . '/captcha/';
-        $today = "$path/" . date('Y-m-d');
+        $path = $conf['tmpdir'] . '/captcha/cookie/';
+        $today = "$path" . date('Y-m-d');
 
         $helper = new \helper_plugin_captcha();
 
         // nothing at all
-        $dirs = glob("$path/*");
+        $dirs = glob("$path*");
         $this->assertEquals(array(), $dirs);
 
         // store a cookie
@@ -110,7 +110,7 @@ class HelperTest extends DokuWikiTest
         $cookie->set();
 
         // nothing but today's data
-        $dirs = glob("$path/*");
+        $dirs = glob("$path*");
         $this->assertEquals(array($today), $dirs);
 
         // add some fake cookies
@@ -120,13 +120,13 @@ class HelperTest extends DokuWikiTest
         io_saveFile("$path/2017-01-04/foo.cookie", '');
 
         // all directories there
-        $dirs = glob("$path/*");
+        $dirs = glob("$path*");
         $this->assertEquals(
             array(
-                "$path/2017-01-01",
-                "$path/2017-01-02",
-                "$path/2017-01-03",
-                "$path/2017-01-04",
+                "{$path}2017-01-01",
+                "{$path}2017-01-02",
+                "{$path}2017-01-03",
+                "{$path}2017-01-04",
                 $today,
             ),
             $dirs
@@ -136,7 +136,7 @@ class HelperTest extends DokuWikiTest
         FileCookie::clean();
 
         // nothing but today's data
-        $dirs = glob("$path/*");
+        $dirs = glob("$path*");
         $this->assertEquals(array($today), $dirs);
     }
 }

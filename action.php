@@ -123,10 +123,8 @@ class action_plugin_captcha extends ActionPlugin
      */
     protected function isLoginBlocked()
     {
-        $base = (int)$this->getConf('logindenial');
-        if ($base < 1) return false;
         $counter = new IpCounter();
-        return $counter->getRemainingTime($base, $this->getConf('logindenial_max')) > 0;
+        return $counter->getRemainingTime() > 0;
     }
 
     /**
@@ -137,10 +135,7 @@ class action_plugin_captcha extends ActionPlugin
     protected function getRemainingTimeString()
     {
         $counter = new IpCounter();
-        $remaining = $counter->getRemainingTime(
-            $this->getConf('logindenial'),
-            $this->getConf('logindenial_max')
-        );
+        $remaining = $counter->getRemainingTime();
 
         if ($remaining >= 3600) {
             return sprintf($this->getLang('timeout_hours'), ceil($remaining / 3600));
@@ -249,7 +244,7 @@ class action_plugin_captcha extends ActionPlugin
     }
 
     /**
-     * Clean cookies once per day
+     * Clean up old captcha files once per day
      */
     public function handleIndexer(Event $event, $param)
     {
@@ -258,6 +253,7 @@ class action_plugin_captcha extends ActionPlugin
         if (time() - $last < 24 * 60 * 60) return;
 
         FileCookie::clean();
+        IpCounter::clean();
         touch($lastrun);
 
         $event->preventDefault();

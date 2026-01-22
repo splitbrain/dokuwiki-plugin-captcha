@@ -21,6 +21,9 @@ class IpCounterTest extends DokuWikiTest
     public function setUp(): void
     {
         parent::setUp();
+        global $conf;
+        $conf['plugin']['captcha']['logindenial'] = 5;
+        $conf['plugin']['captcha']['logindenial_max'] = 3600;
         $this->counter = new IpCounter();
         $this->counter->reset();
     }
@@ -76,30 +79,42 @@ class IpCounterTest extends DokuWikiTest
 
     public function testCalculateTimeoutNoFailures()
     {
-        $this->assertEquals(0, $this->counter->calculateTimeout(5, 3600));
+        $this->assertEquals(0, $this->counter->calculateTimeout());
+    }
+
+    public function testCalculateTimeoutDisabled()
+    {
+        global $conf;
+        $conf['plugin']['captcha']['logindenial'] = 0;
+        $counter = new IpCounter();
+
+        $counter->increment();
+        $this->assertEquals(0, $counter->calculateTimeout());
+
+        $counter->reset();
     }
 
     public function testCalculateTimeoutExponentialGrowth()
     {
         // First failure: base * 2^0 = 5
         $this->counter->increment();
-        $this->assertEquals(5, $this->counter->calculateTimeout(5, 3600));
+        $this->assertEquals(5, $this->counter->calculateTimeout());
 
         // Second failure: base * 2^1 = 10
         $this->counter->increment();
-        $this->assertEquals(10, $this->counter->calculateTimeout(5, 3600));
+        $this->assertEquals(10, $this->counter->calculateTimeout());
 
         // Third failure: base * 2^2 = 20
         $this->counter->increment();
-        $this->assertEquals(20, $this->counter->calculateTimeout(5, 3600));
+        $this->assertEquals(20, $this->counter->calculateTimeout());
 
         // Fourth failure: base * 2^3 = 40
         $this->counter->increment();
-        $this->assertEquals(40, $this->counter->calculateTimeout(5, 3600));
+        $this->assertEquals(40, $this->counter->calculateTimeout());
 
         // Fifth failure: base * 2^4 = 80
         $this->counter->increment();
-        $this->assertEquals(80, $this->counter->calculateTimeout(5, 3600));
+        $this->assertEquals(80, $this->counter->calculateTimeout());
     }
 
     public function testCalculateTimeoutMaxCap()
@@ -109,33 +124,55 @@ class IpCounterTest extends DokuWikiTest
             $this->counter->increment();
         }
 
-        // Should be capped at max
-        $this->assertEquals(3600, $this->counter->calculateTimeout(5, 3600));
-        $this->assertEquals(100, $this->counter->calculateTimeout(5, 100));
+        // Should be capped at max (3600)
+        $this->assertEquals(3600, $this->counter->calculateTimeout());
+    }
+
+    public function testCalculateTimeoutMaxCapLower()
+    {
+        global $conf;
+        $conf['plugin']['captcha']['logindenial_max'] = 100;
+        $counter = new IpCounter();
+
+        // Add many failures to exceed the max
+        for ($i = 0; $i < 20; $i++) {
+            $counter->increment();
+        }
+
+        // Should be capped at max (100)
+        $this->assertEquals(100, $counter->calculateTimeout());
+
+        $counter->reset();
     }
 
     public function testCalculateTimeoutDifferentBase()
     {
-        $this->counter->increment();
-        $this->assertEquals(10, $this->counter->calculateTimeout(10, 3600));
+        global $conf;
+        $conf['plugin']['captcha']['logindenial'] = 10;
+        $counter = new IpCounter();
 
-        $this->counter->increment();
-        $this->assertEquals(20, $this->counter->calculateTimeout(10, 3600));
+        $counter->increment();
+        $this->assertEquals(10, $counter->calculateTimeout());
 
-        $this->counter->increment();
-        $this->assertEquals(40, $this->counter->calculateTimeout(10, 3600));
+        $counter->increment();
+        $this->assertEquals(20, $counter->calculateTimeout());
+
+        $counter->increment();
+        $this->assertEquals(40, $counter->calculateTimeout());
+
+        $counter->reset();
     }
 
     public function testGetRemainingTimeNoFailures()
     {
-        $this->assertEquals(0, $this->counter->getRemainingTime(5, 3600));
+        $this->assertEquals(0, $this->counter->getRemainingTime());
     }
 
     public function testGetRemainingTimeImmediatelyAfterFailure()
     {
         $this->counter->increment();
 
-        $remaining = $this->counter->getRemainingTime(5, 3600);
+        $remaining = $this->counter->getRemainingTime();
 
         // Immediately after increment, remaining should be close to full timeout (5s)
         // Allow 1 second tolerance for test execution time
@@ -152,7 +189,7 @@ class IpCounterTest extends DokuWikiTest
         touch($store, time() - 10); // 10 seconds ago
 
         // Timeout is 5 seconds, 10 seconds have passed, so remaining should be 0
-        $this->assertEquals(0, $this->counter->getRemainingTime(5, 3600));
+        $this->assertEquals(0, $this->counter->getRemainingTime());
     }
 
     public function testGetRemainingTimePartiallyElapsed()
@@ -164,7 +201,7 @@ class IpCounterTest extends DokuWikiTest
         $store = $this->getInaccessibleProperty($this->counter, 'store');
         touch($store, time() - 3);
 
-        $remaining = $this->counter->getRemainingTime(5, 3600);
+        $remaining = $this->counter->getRemainingTime();
 
         // 10 second timeout, 3 seconds elapsed, ~7 seconds remaining
         $this->assertGreaterThanOrEqual(6, $remaining);
