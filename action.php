@@ -43,7 +43,7 @@ class action_plugin_captcha extends ActionPlugin
 
         // log authentication failures
         if ((int)$this->getConf('loginprotect') > 1 || (int)$this->getConf('logindenial') > 0) {
-            $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'handleAuth', []);
+            $controller->register_hook('AUTH_LOGIN_CHECK', 'AFTER', $this, 'handleLoginResult', []);
         }
     }
 
@@ -158,7 +158,7 @@ class action_plugin_captcha extends ActionPlugin
     public function handleLogin(Event $event, $param)
     {
         global $INPUT;
-        if (!$INPUT->bool('u')) return; // this login was not triggered by a form
+        if ($event->data['user'] === '') return; // no login attempt
 
         // Check timeout first - if blocked, reject immediately
         if ($this->isLoginBlocked()) {
@@ -171,6 +171,7 @@ class action_plugin_captcha extends ActionPlugin
             return;
         }
 
+        if (!$INPUT->bool('u')) return; // not a form login, a CAPTCHA is not possible
         if (!$this->protectLogin()) return; // no CAPTCHA protection wanted
 
         // we need to have $ID set for the captcha check
@@ -261,28 +262,22 @@ class action_plugin_captcha extends ActionPlugin
     }
 
     /**
-     * Count failed login attempts
+     * Count failed login attempts and reset the counter on successful logins
+     *
+     * Attempts that were refused before the password check are not counted.
+     *
+     * @param Event $event
+     * @param $param
      */
-    public function handleAuth(Event $event, $param)
+    public function handleLoginResult(Event $event, $param)
     {
-        global $INPUT;
-        $act = act_clean($event->data);
-        if (
-            $act != 'logout' &&
-            $INPUT->str('u') !== '' &&
-            empty($INPUT->server->str('http_credentials')) &&
-            empty($INPUT->server->str('REMOTE_USER'))
-        ) {
-            // This is a failed authentication attempt, count it
-            (new IpCounter())->increment();
-        }
+        if ($event->data['user'] === '') return; // no login attempt
+        if (!$event->mayRunDefault()) return; // refused before the password check
 
-        if (
-            $act == 'login' &&
-            !empty($INPUT->server->str('REMOTE_USER'))
-        ) {
-            // This is a successful login, reset the counter
+        if ($event->result) {
             (new IpCounter())->reset();
+        } else {
+            (new IpCounter())->increment();
         }
     }
 }
