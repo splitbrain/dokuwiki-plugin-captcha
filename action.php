@@ -158,7 +158,7 @@ class action_plugin_captcha extends ActionPlugin
     public function handleLogin(Event $event, $param)
     {
         global $INPUT;
-        if (!$INPUT->bool('u')) return; // this login was not triggered by a form
+        if ($event->data['user'] === '') return; // no login attempt
 
         // Check timeout first - if blocked, reject immediately
         if ($this->isLoginBlocked()) {
@@ -171,6 +171,7 @@ class action_plugin_captcha extends ActionPlugin
             return;
         }
 
+        if (!$INPUT->bool('u')) return; // not a form login, a CAPTCHA is not possible
         if (!$this->protectLogin()) return; // no CAPTCHA protection wanted
 
         // we need to have $ID set for the captcha check
